@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace ServoPress.Views
 {
     /// <summary>
-    /// HomePageView.xaml 的交互逻辑
+    /// ProductionView.xaml 的交互逻辑
     /// </summary>
-    public partial class HomePageView : UserControl
+    public partial class ProductionView : UserControl
     {
-        public HomePageView()
+        public ProductionView()
         {
             InitializeComponent();
         }

@@ -84,31 +84,31 @@
                     <ListBoxItem>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🏠" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="主页 (操作)" VerticalAlignment="Center"/>
+                            <TextBlock Text="实时生产" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📜" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="序列编辑 (核心)" VerticalAlignment="Center"/>
+                            <TextBlock Text="序列编辑" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🔧" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="参数设置 (标定)" VerticalAlignment="Center"/>
+                            <TextBlock Text="参数设置" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📊" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="历史数据 (分析)" VerticalAlignment="Center"/>
+                            <TextBlock Text="历史数据" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⚙️" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="系统管理 (集成)" VerticalAlignment="Center"/>
+                            <TextBlock Text="系统管理" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                 </ListBox>
@@ -130,7 +130,7 @@
                 </TabControl.ItemContainerStyle>
 
                 <TabItem Header="主页">
-                    <views:HomePageView />
+                    <views:ProductionView />
                 </TabItem>
 
                 <TabItem Header="序列编辑">
