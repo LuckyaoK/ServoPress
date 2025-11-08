@@ -9,16 +9,38 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="HandyControl" Version="3.5.1" />
+    <None Remove="Resources\Icons\HomePosition.svg" />
+    <None Remove="Resources\Icons\Jump.svg" />
+    <None Remove="Resources\Icons\Label.svg" />
+    <None Remove="Resources\Icons\Measure.svg" />
+    <None Remove="Resources\Icons\Motion.svg" />
+    <None Remove="Resources\Icons\SequenceEnd.svg" />
+    <None Remove="Resources\Icons\TIMER.svg" />
+    <None Remove="Resources\Icons\Wait.svg" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\Icons\" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="HandyControl" Version="3.5.1" />
+    <PackageReference Include="SharpVectors.Wpf" Version="1.8.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Resources\Image\" />
     <Folder Include="ViewModels\" />
     <Folder Include="Services\" />
     <Folder Include="Converters\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Icons\HomePosition.svg" />
+    <Resource Include="Resources\Icons\Jump.svg" />
+    <Resource Include="Resources\Icons\Label.svg" />
+    <Resource Include="Resources\Icons\Measure.svg" />
+    <Resource Include="Resources\Icons\Motion.svg" />
+    <Resource Include="Resources\Icons\SequenceEnd.svg" />
+    <Resource Include="Resources\Icons\TIMER.svg" />
+    <Resource Include="Resources\Icons\Wait.svg" />
   </ItemGroup>
 
 </Project>

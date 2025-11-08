@@ -6,7 +6,7 @@
         xmlns:views="clr-namespace:ServoPress.Views"
         mc:Ignorable="d"
         Title="伺服压机控制系统 V1.0" 
-        Height="800" Width="1280"
+        Height="950" Width="1280"
         WindowStartupLocation="CenterScreen"
         Background="White">
     <Window.Resources>
