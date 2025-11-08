@@ -172,7 +172,22 @@
         <!-- ==================================================================== -->
         <!-- 2: 序列步骤列表 (中间) -->
         <!-- ==================================================================== -->
-        <GroupBox Grid.Column="2" Header="压装序列 (MP101_PartA)">
+        <!-- 
+        优化: GroupBox.Header 现在包含一个 StackPanel，
+        其中包含标题 TextBlock 和一个用于选择程序号的 ComboBox
+        -->
+        <GroupBox Grid.Column="2">
+            <GroupBox.Header>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="压装序列" VerticalAlignment="Center"/>
+                    <ComboBox Margin="10,0,0,0" Width="150" SelectedIndex="0" VerticalAlignment="Center">
+                        <ComboBoxItem Content="MP101_PartA"/>
+                        <ComboBoxItem Content="MP102_PartB"/>
+                        <ComboBoxItem Content="MP200_Bearing"/>
+                    </ComboBox>
+                </StackPanel>
+            </GroupBox.Header>
+
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -203,11 +218,22 @@
                     </DataGrid.ItemsSource>
                 </DataGrid>
 
-                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                    <Button Content="删除步骤" Margin="5"/>
-                    <Button Content="上移" Margin="5"/>
-                    <Button Content="下移" Margin="5"/>
-                </StackPanel>
+                <!-- 
+                优化:
+                根据用户要求，移除了 "添加步骤" 按钮.
+                Grid 现在只有 3 列，用于均匀分布剩余的按钮.
+                -->
+                <Grid Grid.Row="1" Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" Content="上移步骤" Margin="5,0,5,0"/>
+                    <Button Grid.Column="1" Content="下移步骤" Margin="5,0,5,0"/>
+                    <Button Grid.Column="2" Content="删除步骤" Margin="5,0,5,0"/>
+                </Grid>
             </Grid>
         </GroupBox>
 
@@ -224,12 +250,12 @@
             -->
             <TabControl x:Name="DetailEditorTabs" BorderThickness="0" Background="Transparent" ItemContainerStyle="{StaticResource HiddenTabItemStyle}">
 
-                <!-- 0: 动作 (Motion) (image_81a4e9.png) -->
+                <!-- 0: 移动 (Motion) (image_81a4e9.png) -->
                 <TabItem>
                     <StackPanel>
                         <StackPanel Style="{StaticResource DetailHeaderPanel}">
                             <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="/Resources/Icons/Motion.svg"/>
-                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="动作"/>
+                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="移动"/>
                         </StackPanel>
 
                         <Grid Style="{StaticResource DetailPropertyRowGrid}">
