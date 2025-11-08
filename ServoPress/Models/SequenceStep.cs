@@ -1,16 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ServoPress.Models
 {
-    public class SequenceStep
+    /// <summary>
+    /// 步序基类
+    /// </summary>
+    public abstract partial class SequenceStep : ObservableValidator
     {
-        public int Step { get; set; }
-        public string Command { get; set; }
-        public string Params { get; set; }
+        [ObservableProperty]
+        private int _stepNumber;
+
+        /// <summary>
+        /// 步骤的类型名称 (例如 "移动", "时间")
+        /// </summary>
+        public abstract string StepType { get; }
+
+        /// <summary>
+        /// 步骤的图标路径
+        /// </summary>
+        public abstract string IconSource { get; }
+
+        /// <summary>
+        /// 在 ListView 中显示的步骤详情
+        /// </summary>
+        public abstract string Summary { get; }
+
     }
 
 }

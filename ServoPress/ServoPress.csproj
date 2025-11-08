@@ -17,6 +17,10 @@
     <None Remove="Resources\Icons\SequenceEnd.svg" />
     <None Remove="Resources\Icons\TIMER.svg" />
     <None Remove="Resources\Icons\Wait.svg" />
+    <None Remove="Resources\Icons\Delete.svg" />
+    <None Remove="Resources\Icons\MoveDown.svg" />
+    <None Remove="Resources\Icons\MoveUp.svg" />
+    <None Remove="Resources\Icons\Save.svg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,10 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Properties\" />
     <Folder Include="Resources\Image\" />
-    <Folder Include="ViewModels\" />
     <Folder Include="Services\" />
-    <Folder Include="Converters\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +44,10 @@
     <Resource Include="Resources\Icons\SequenceEnd.svg" />
     <Resource Include="Resources\Icons\TIMER.svg" />
     <Resource Include="Resources\Icons\Wait.svg" />
+    <Resource Include="Resources\Icons\Delete.svg" />
+    <Resource Include="Resources\Icons\MoveDown.svg" />
+    <Resource Include="Resources\Icons\MoveUp.svg" />
+    <Resource Include="Resources\Icons\Save.svg" />
   </ItemGroup>
 
 </Project>

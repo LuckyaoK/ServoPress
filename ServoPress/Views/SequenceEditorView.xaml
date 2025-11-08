@@ -3,12 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:ServoPress.Models"
              xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+             xmlns:models="clr-namespace:ServoPress.Models"
+             xmlns:converters="clr-namespace:ServoPress.Converters" 
+             xmlns:viewmodels="clr-namespace:ServoPress.ViewModels"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1050">
+             d:DesignHeight="700" d:DesignWidth="1050"
+             d:DataContext="{d:DesignInstance Type=viewmodels:SequenceEditorViewModel}">
+    <!-- 
+    d:DataContext 为 XAML 设计器提供了示例数据
+    xmlns:models 和 xmlns:viewmodels 是新添加的命名空间
+     d:DataContext="{d:DesignInstance Type=viewmodels:SequenceEditorViewModel}
+    -->
 
     <UserControl.Resources>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <!-- 样式: 左侧工具面板按钮 -->
         <Style x:Key="PaletteButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
             <Setter Property="Background" Value="Transparent"/>
@@ -45,11 +54,6 @@
         样式: 步骤详情 (第三列)
         ====================================================================
         -->
-
-        <!-- 样式: 隐藏 TabControl 的标签头 -->
-        <Style x:Key="HiddenTabItemStyle" TargetType="TabItem">
-            <Setter Property="Visibility" Value="Collapsed"/>
-        </Style>
 
         <!-- 样式: 详情页的标题栏 (图标 + 文本) -->
         <Style x:Key="DetailHeaderPanel" TargetType="StackPanel">
@@ -92,6 +96,357 @@
             <Setter Property="Foreground" Value="#FF555555"/>
         </Style>
 
+        <!-- 
+        ====================================================================
+        DataTemplates: 用于第三列的 ContentControl
+        ====================================================================
+        -->
+
+        <!-- DataTemplate for MotionStep -->
+        <DataTemplate DataType="{x:Type models:MotionStep}">
+            <StackPanel>
+                <StackPanel Style="{StaticResource DetailHeaderPanel}">
+                    <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="{Binding IconSource}"/>
+                    <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="{Binding StepType}"/>
+                </StackPanel>
+
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
+                    <TextBox Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="参考"/>
+                    <ComboBox Grid.Column="1" Text="{Binding Reference}" VerticalAlignment="Center" Margin="5,0">
+                        <ComboBoxItem Content="绝对位移"/>
+                        <ComboBoxItem Content="相对位移"/>
+                    </ComboBox>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="位置"/>
+                    <TextBox Grid.Column="1" Text="{Binding Position, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="mm"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="速度"/>
+                    <TextBox Grid.Column="1" Text="{Binding Speed, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="mm/s"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="最大力"/>
+                    <TextBox Grid.Column="1" Text="{Binding MaxForce, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="N"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="加速度"/>
+                    <TextBox Grid.Column="1" Text="{Binding Acceleration, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="减速度"/>
+                    <TextBox Grid.Column="1" Text="{Binding Deceleration, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- DataTemplate for MeasureStep -->
+        <DataTemplate DataType="{x:Type models:MeasureStep}">
+            <StackPanel>
+                <StackPanel Style="{StaticResource DetailHeaderPanel}">
+                    <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="{Binding IconSource}"/>
+                    <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="{Binding StepType}"/>
+                </StackPanel>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
+                    <TextBox Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+                <GroupBox Header="测量" Margin="0,5">
+                    <StackPanel>
+                        <RadioButton Content="启动" GroupName="MeasureToggle" Margin="5"
+                                     IsChecked="{Binding Mode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Start}"/>
+                        <RadioButton Content="停止" GroupName="MeasureToggle" Margin="5"
+                                     IsChecked="{Binding Mode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Stop}"/>
+                    </StackPanel>
+                </GroupBox>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}" Margin="0,5,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="目标"/>
+                    <ComboBox Grid.Column="1" Text="{Binding Target}" VerticalAlignment="Center" Margin="5,0">
+                        <ComboBoxItem Content="TARGETRES_NONE"/>
+                        <ComboBoxItem Content="TARGETRES_RAM"/>
+                    </ComboBox>
+                </Grid>
+            </StackPanel>
+            <!-- 
+            注意: EnumToBooleanConverter 是一个标准的转换器, 您需要自己添加到项目中.
+            为简单起见, 您也可以只使用 ComboBox 来绑定 Enum.
+            -->
+        </DataTemplate>
+
+        <!-- DataTemplate for TimerStep -->
+        <DataTemplate DataType="{x:Type models:TimerStep}">
+            <StackPanel>
+                <StackPanel Style="{StaticResource DetailHeaderPanel}">
+                    <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="{Binding IconSource}"/>
+                    <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="{Binding StepType}"/>
+                </StackPanel>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
+                    <TextBox Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="时间"/>
+                    <TextBox Grid.Column="1" Text="{Binding Duration, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="毫秒"/>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- DataTemplate for WaitStep -->
+        <DataTemplate DataType="{x:Type models:WaitStep}">
+            <StackPanel>
+                <StackPanel Style="{StaticResource DetailHeaderPanel}">
+                    <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="{Binding IconSource}"/>
+                    <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="{Binding StepType}"/>
+                </StackPanel>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
+                    <TextBox Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- DataTemplate for LabelStep -->
+        <DataTemplate DataType="{x:Type models:LabelStep}">
+            <StackPanel>
+                <StackPanel Style="{StaticResource DetailHeaderPanel}">
+                    <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="{Binding IconSource}"/>
+                    <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="{Binding StepType}"/>
+                </StackPanel>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
+                    <TextBox Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="标签ID"/>
+                    <!-- 假设 ID 是数字, 但显示为 ComboBox -->
+                    <ComboBox Grid.Column="1" Text="{Binding LabelId}" VerticalAlignment="Center" Margin="5,0">
+                        <ComboBoxItem Content="1"/>
+                        <ComboBoxItem Content="2"/>
+                        <ComboBoxItem Content="3"/>
+                        <ComboBoxItem Content="4"/>
+                        <ComboBoxItem Content="5"/>
+                    </ComboBox>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- DataTemplate for JumpStep -->
+        <DataTemplate DataType="{x:Type models:JumpStep}">
+            <StackPanel>
+                <StackPanel Style="{StaticResource DetailHeaderPanel}">
+                    <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="{Binding IconSource}"/>
+                    <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="{Binding StepType}"/>
+                </StackPanel>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
+                    <TextBox Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="目标标签ID"/>
+                    <ComboBox Grid.Column="1" Text="{Binding TargetLabelId}" VerticalAlignment="Center" Margin="5,0">
+                        <ComboBoxItem Content="1"/>
+                        <ComboBoxItem Content="2"/>
+                        <ComboBoxItem Content="3"/>
+                        <ComboBoxItem Content="4"/>
+                        <ComboBoxItem Content="5"/>
+                    </ComboBox>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="计数"/>
+                    <TextBox Grid.Column="1" Text="{Binding Count, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- DataTemplate for HomePositionStep -->
+        <DataTemplate DataType="{x:Type models:HomePositionStep}">
+            <StackPanel>
+                <StackPanel Style="{StaticResource DetailHeaderPanel}">
+                    <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="{Binding IconSource}"/>
+                    <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="{Binding StepType}"/>
+                </StackPanel>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
+                    <TextBox Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="参考"/>
+                    <ComboBox Grid.Column="1" Text="{Binding Reference}" VerticalAlignment="Center" Margin="5,0">
+                        <ComboBoxItem Content="绝对位移"/>
+                        <ComboBoxItem Content="相对位移"/>
+                    </ComboBox>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="位置"/>
+                    <TextBox Grid.Column="1" Text="{Binding Position, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="mm"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="速度"/>
+                    <TextBox Grid.Column="1" Text="{Binding Speed, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="mm/s"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="最大力"/>
+                    <TextBox Grid.Column="1" Text="{Binding MaxForce, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="N"/>
+                </Grid>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="最小力"/>
+                    <TextBox Grid.Column="1" Text="{Binding MinForce, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                    <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="N"/>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- DataTemplate for EndStep -->
+        <DataTemplate DataType="{x:Type models:EndStep}">
+            <StackPanel>
+                <StackPanel Style="{StaticResource DetailHeaderPanel}">
+                    <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="{Binding IconSource}"/>
+                    <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="{Binding StepType}"/>
+                </StackPanel>
+                <Grid Style="{StaticResource DetailPropertyRowGrid}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
+                    <TextBox Grid.Column="1" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="5,0"/>
+                </Grid>
+                <TextBlock Text="序列结束执行" Margin="10" FontSize="14" Foreground="Gray"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- (新) ListView 步骤列表的模板 -->
+        <DataTemplate x:Key="SequenceStepItemTemplate" DataType="{x:Type models:SequenceStep}">
+            <Border BorderBrush="#FFE0E0E0" BorderThickness="0,0,0,1" Padding="5,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- 步号 -->
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- 步名 -->
+                        <ColumnDefinition Width="*"/>
+                        <!-- 详情 -->
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding StepNumber}" FontSize="15" 
+                               VerticalAlignment="Center" MinWidth="25" Margin="0,0,10,0" TextAlignment="Center"/>
+                    <TextBlock Text="{Binding StepType}" Grid.Column="1" Margin="0,0,20,0"  FontSize="15"  TextAlignment="Center" />
+                    <TextBlock Text="{Binding Summary}"  Grid.Column="2"  FontSize="15"  TextAlignment="Left"/>
+                            
+                </Grid>
+            </Border>
+        </DataTemplate>
+
     </UserControl.Resources>
 
     <Grid Margin="10">
@@ -110,53 +465,54 @@
 
         <!-- ==================================================================== -->
         <!-- 0: 添加步骤 (左侧工具面板) -->
+        <!-- 修改: 按钮 Click 事件改为 Command 绑定 -->
         <!-- ==================================================================== -->
         <Border Grid.Column="0" Background="#FDFDFD" BorderBrush="#FFEEEEEE" BorderThickness="0,0,1,0">
             <GroupBox Header="添加步骤" Padding="5,10,5,5" BorderThickness="0">
                 <StackPanel Orientation="Vertical">
-                    <Button x:Name="AddMotionButton" Style="{StaticResource PaletteButtonStyle}" Click="AddMotionButton_Click">
+                    <Button Style="{StaticResource PaletteButtonStyle}" Command="{Binding AddMotionStepCommand}">
                         <StackPanel>
                             <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/Motion.svg"/>
                             <TextBlock Style="{StaticResource PaletteTextStyle}" Text="移动"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="AddMeasureButton" Style="{StaticResource PaletteButtonStyle}" Click="AddMeasureButton_Click">
+                    <Button Style="{StaticResource PaletteButtonStyle}" Command="{Binding AddMeasureStepCommand}">
                         <StackPanel>
                             <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/Measure.svg"/>
                             <TextBlock Style="{StaticResource PaletteTextStyle}" Text="测试"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="AddTimeButton" Style="{StaticResource PaletteButtonStyle}" Click="AddTimeButton_Click">
+                    <Button Style="{StaticResource PaletteButtonStyle}" Command="{Binding AddTimeStepCommand}">
                         <StackPanel>
                             <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/TIMER.svg"/>
                             <TextBlock Style="{StaticResource PaletteTextStyle}" Text="时间"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="AddWaitButton" Style="{StaticResource PaletteButtonStyle}" Click="AddWaitButton_Click">
+                    <Button Style="{StaticResource PaletteButtonStyle}" Command="{Binding AddWaitStepCommand}">
                         <StackPanel>
                             <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/Wait.svg"/>
                             <TextBlock Style="{StaticResource PaletteTextStyle}" Text="等待"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="AddLabelButton" Style="{StaticResource PaletteButtonStyle}" Click="AddLabelButton_Click">
+                    <Button Style="{StaticResource PaletteButtonStyle}" Command="{Binding AddLabelStepCommand}">
                         <StackPanel>
                             <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/Label.svg"/>
                             <TextBlock Style="{StaticResource PaletteTextStyle}" Text="标签"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="AddJumpButton" Style="{StaticResource PaletteButtonStyle}" Click="AddJumpButton_Click">
+                    <Button Style="{StaticResource PaletteButtonStyle}" Command="{Binding AddJumpStepCommand}">
                         <StackPanel>
                             <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/Jump.svg"/>
                             <TextBlock Style="{StaticResource PaletteTextStyle}" Text="跳转"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="AddHomeButton" Style="{StaticResource PaletteButtonStyle}" Click="AddHomeButton_Click">
+                    <Button Style="{StaticResource PaletteButtonStyle}" Command="{Binding AddHomeStepCommand}">
                         <StackPanel>
                             <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/HomePosition.svg"/>
                             <TextBlock Style="{StaticResource PaletteTextStyle}" Text="回原"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="AddEndButton" Style="{StaticResource PaletteButtonStyle}" Click="AddEndButton_Click">
+                    <Button Style="{StaticResource PaletteButtonStyle}" Command="{Binding AddEndStepCommand}">
                         <StackPanel>
                             <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/SequenceEnd.svg"/>
                             <TextBlock Style="{StaticResource PaletteTextStyle}" Text="结束"/>
@@ -171,21 +527,25 @@
 
         <!-- ==================================================================== -->
         <!-- 2: 序列步骤列表 (中间) -->
+        <!-- 修改: DataGrid -> ListView -->
         <!-- ==================================================================== -->
-        <!-- 
-        优化: GroupBox.Header 现在包含一个 StackPanel，
-        其中包含标题 TextBlock 和一个用于选择程序号的 ComboBox
-        -->
         <GroupBox Grid.Column="2">
             <GroupBox.Header>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="压装序列" VerticalAlignment="Center"/>
-                    <ComboBox Margin="10,0,0,0" Width="150" SelectedIndex="0" VerticalAlignment="Center">
-                        <ComboBoxItem Content="MP101_PartA"/>
-                        <ComboBoxItem Content="MP102_PartB"/>
-                        <ComboBoxItem Content="MP200_Bearing"/>
-                    </ComboBox>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="压装序列" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="程序号:" VerticalAlignment="Center"/>
+                        <ComboBox Margin="5,0,0,0" Width="150" SelectedIndex="0" VerticalAlignment="Center">
+                            <ComboBoxItem Content="MP101_PartA"/>
+                            <ComboBoxItem Content="MP102_PartB"/>
+                            <ComboBoxItem Content="MP200_Bearing"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
             </GroupBox.Header>
 
             <Grid>
@@ -193,46 +553,46 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-
-                <DataGrid Grid.Row="0"
-                          IsReadOnly="True"
+   
+                <ListView Grid.Row="0"
+                          ItemsSource="{Binding SequenceSteps}"
+                          SelectedItem="{Binding SelectedStep, Mode=TwoWay}"
+                          ItemTemplate="{StaticResource SequenceStepItemTemplate}"
                           BorderThickness="0"
-                          GridLinesVisibility="None"
-                          HeadersVisibility="None">
+                          HorizontalContentAlignment="Stretch"/>
 
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="步号" Binding="{Binding Step}" Width="Auto"/>
-                        <DataGridTextColumn Header="命令 (元素)" Binding="{Binding Command}" Width="*"/>
-                        <DataGridTextColumn Header="参数" Binding="{Binding Params}" Width="2*"/>
-                    </DataGrid.Columns>
-                    <!-- 示例数据 -->
-                    <DataGrid.ItemsSource>
-                        <x:Array Type="{x:Type local:SequenceStep}">
-                            <local:SequenceStep Step="1" Command="MEASURE START" Params=""/>
-                            <local:SequenceStep Step="2" Command="MOTION (位移控)" Params="目标: 62.00 mm, 保护力: 1000 N"/>
-                            <local:SequenceStep Step="3" Command="MOTION (压力控)" Params="目标: 68.00 mm, 触发力: 400 N"/>
-                            <local:SequenceStep Step="4" Command="TIMER" Params="延时: 500 ms"/>
-                            <local:SequenceStep Step="5" Command="MEASURE STOP" Params=""/>
-                            <local:SequenceStep Step="6" Command="HOME_POSITION" Params="返回原点"/>
-                        </x:Array>
-                    </DataGrid.ItemsSource>
-                </DataGrid>
-
-                <!-- 
-                优化:
-                根据用户要求，移除了 "添加步骤" 按钮.
-                Grid 现在只有 3 列，用于均匀分布剩余的按钮.
-                -->
                 <Grid Grid.Row="1" Margin="0,10,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Content="上移步骤" Margin="5,0,5,0"/>
-                    <Button Grid.Column="1" Content="下移步骤" Margin="5,0,5,0"/>
-                    <Button Grid.Column="2" Content="删除步骤" Margin="5,0,5,0"/>
+                    <Button Grid.Column="0" Style="{StaticResource PaletteButtonStyle}" Command="{Binding MoveStepUpCommand}">
+                        <StackPanel>
+                            <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/MoveUp.svg"/>
+                            <TextBlock Style="{StaticResource PaletteTextStyle}" Text="上移步骤"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="1" Style="{StaticResource PaletteButtonStyle}" Command="{Binding MoveStepDownCommand}">
+                        <StackPanel>
+                            <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/MoveDown.svg"/>
+                            <TextBlock Style="{StaticResource PaletteTextStyle}" Text="下移步骤"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="2" Style="{StaticResource PaletteButtonStyle}" Command="{Binding DeleteStepCommand}">
+                        <StackPanel>
+                            <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/Delete.svg"/>
+                            <TextBlock Style="{StaticResource PaletteTextStyle}" Text="删除步骤"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="3" Style="{StaticResource PaletteButtonStyle}" Command="{Binding SaveSequenceCommand}">
+                        <StackPanel>
+                            <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/Save.svg"/>
+                            <TextBlock Style="{StaticResource PaletteTextStyle}" Text="保存序列"/>
+                        </StackPanel>
+                    </Button>
                 </Grid>
             </Grid>
         </GroupBox>
@@ -242,330 +602,19 @@
 
         <!-- ==================================================================== -->
         <!-- 4: 步骤详情编辑 (右侧) -->
+        <!-- ContentControl -->
         <!-- ==================================================================== -->
+
+        <!-- 
+        - Content 绑定到 ViewModel 的 SelectedStep
+        - 所有的 DataTemplate 都在 UserControl.Resources 中定义
+        -->
         <ScrollViewer Grid.Column="4" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+            <ContentControl Content="{Binding SelectedStep}"/>
             <!-- 
-            这个 TabControl 包含所有 8 个编辑页面
-            我们通过第一列的按钮点击来切换 SelectedIndex
+            WPF 将会自动在 UserControl.Resources (或 Application.Resources)
+            中查找与 SelectedStep 的 *类型* 匹配的 DataTemplate
             -->
-            <TabControl x:Name="DetailEditorTabs" BorderThickness="0" Background="Transparent" ItemContainerStyle="{StaticResource HiddenTabItemStyle}">
-
-                <!-- 0: 移动 (Motion) (image_81a4e9.png) -->
-                <TabItem>
-                    <StackPanel>
-                        <StackPanel Style="{StaticResource DetailHeaderPanel}">
-                            <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="/Resources/Icons/Motion.svg"/>
-                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="移动"/>
-                        </StackPanel>
-
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
-                            <TextBox Grid.Column="1" Text="MOTION" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="参考"/>
-                            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" Margin="5,0">
-                                <ComboBoxItem Content="绝对位移"/>
-                                <ComboBoxItem Content="相对位移"/>
-                            </ComboBox>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="位置"/>
-                            <TextBox Grid.Column="1" Text="60.00" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="mm"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="速度"/>
-                            <TextBox Grid.Column="1" Text="50.00" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="mm/s"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="最大力"/>
-                            <TextBox Grid.Column="1" Text="1000" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="N"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="加速度"/>
-                            <TextBox Grid.Column="1" Text="300" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="减速度"/>
-                            <TextBox Grid.Column="1" Text="300" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                    </StackPanel>
-                </TabItem>
-
-                <!-- 1: 测量 (Measure) (image_81a526.png) -->
-                <TabItem>
-                    <StackPanel>
-                        <StackPanel Style="{StaticResource DetailHeaderPanel}">
-                            <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="/Resources/Icons/Measure.svg"/>
-                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="测量"/>
-                        </StackPanel>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
-                            <TextBox Grid.Column="1" Text="MEASURE" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-
-                        <GroupBox Header="测量" Margin="0,5">
-                            <StackPanel>
-                                <RadioButton Content="启动" IsChecked="True" GroupName="MeasureToggle" Margin="5"/>
-                                <RadioButton Content="停止" GroupName="MeasureToggle" Margin="5"/>
-                            </StackPanel>
-                        </GroupBox>
-
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}" Margin="0,5,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="目标"/>
-                            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" Margin="5,0">
-                                <ComboBoxItem Content="TARGETRES_NONE"/>
-                                <ComboBoxItem Content="TARGETRES_RAM"/>
-                            </ComboBox>
-                        </Grid>
-                    </StackPanel>
-                </TabItem>
-
-                <!-- 2: 时间 (Time) (image_81a80a.png) -->
-                <TabItem>
-                    <StackPanel>
-                        <StackPanel Style="{StaticResource DetailHeaderPanel}">
-                            <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="/Resources/Icons/TIMER.svg"/>
-                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="定时器"/>
-                        </StackPanel>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
-                            <TextBox Grid.Column="1" Text="TIMER" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="时间"/>
-                            <TextBox Grid.Column="1" Text="2000.0000" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="毫秒"/>
-                        </Grid>
-                    </StackPanel>
-                </TabItem>
-
-                <!-- 3: 等待 (Wait) (image_81a84a.png) -->
-                <TabItem>
-                    <StackPanel>
-                        <StackPanel Style="{StaticResource DetailHeaderPanel}">
-                            <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="/Resources/Icons/Wait.svg"/>
-                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="等待"/>
-                        </StackPanel>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
-                            <TextBox Grid.Column="1" Text="WAIT" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                    </StackPanel>
-                </TabItem>
-
-                <!-- 4: 标签 (Label) (image_81a04b.png) -->
-                <TabItem>
-                    <StackPanel>
-                        <StackPanel Style="{StaticResource DetailHeaderPanel}">
-                            <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="/Resources/Icons/Label.svg"/>
-                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="标签"/>
-                        </StackPanel>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
-                            <TextBox Grid.Column="1" Text="LABEL" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="标签ID"/>
-                            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" Margin="5,0">
-                                <ComboBoxItem Content="1"/>
-                                <ComboBoxItem Content="2"/>
-                                <ComboBoxItem Content="3"/>
-                            </ComboBox>
-                        </Grid>
-                    </StackPanel>
-                </TabItem>
-
-                <!-- 5: 跳转 (Jump) (image_81a889.png) -->
-                <TabItem>
-                    <StackPanel>
-                        <StackPanel Style="{StaticResource DetailHeaderPanel}">
-                            <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="/Resources/Icons/Jump.svg"/>
-                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="跳转"/>
-                        </StackPanel>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
-                            <TextBox Grid.Column="1" Text="JUMP" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="标签"/>
-                            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" Margin="5,0">
-                                <ComboBoxItem Content="1"/>
-                                <ComboBoxItem Content="2"/>
-                                <ComboBoxItem Content="3"/>
-                            </ComboBox>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="计数"/>
-                            <TextBox Grid.Column="1" Text="10.0000" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                    </StackPanel>
-                </TabItem>
-
-                <!-- 6: 回原 (HomePosition) (image_81a0c3.png) -->
-                <TabItem>
-                    <StackPanel>
-                        <StackPanel Style="{StaticResource DetailHeaderPanel}">
-                            <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="/Resources/Icons/HomePosition.svg"/>
-                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="起始位置"/>
-                        </StackPanel>
-
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
-                            <TextBox Grid.Column="1" Text="HOME_POSITION" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="参考"/>
-                            <ComboBox Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center" Margin="5,0">
-                                <ComboBoxItem Content="绝对位移"/>
-                                <ComboBoxItem Content="相对位移"/>
-                            </ComboBox>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="位置"/>
-                            <TextBox Grid.Column="1" Text="0.00" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="mm"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="速度"/>
-                            <TextBox Grid.Column="1" Text="50.00" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="mm/s"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="最大力"/>
-                            <TextBox Grid.Column="1" Text="5000" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="N"/>
-                        </Grid>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="最小力"/>
-                            <TextBox Grid.Column="1" Text="-5000" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBlock Grid.Column="2" Style="{StaticResource UnitTextBlock}" Text="N"/>
-                        </Grid>
-                    </StackPanel>
-                </TabItem>
-
-                <!-- 7: 结束 (SequenceEnd) (image_81a109.png) -->
-                <TabItem>
-                    <StackPanel>
-                        <StackPanel Style="{StaticResource DetailHeaderPanel}">
-                            <svgc:SvgViewbox Style="{StaticResource DetailHeaderIconStyle}" Source="/Resources/Icons/SequenceEnd.svg"/>
-                            <TextBlock Style="{StaticResource DetailHeaderTextStyle}" Text="结束"/>
-                        </StackPanel>
-                        <Grid Style="{StaticResource DetailPropertyRowGrid}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Style="{StaticResource DetailPropertyLabel}" Text="描述"/>
-                            <TextBox Grid.Column="1" Text="SEQUENCE_END" VerticalAlignment="Center" Margin="5,0"/>
-                        </Grid>
-                    </StackPanel>
-                </TabItem>
-
-            </TabControl>
         </ScrollViewer>
 
     </Grid>
