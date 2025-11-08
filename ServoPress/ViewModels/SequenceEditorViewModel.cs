@@ -93,7 +93,6 @@ namespace ServoPress.ViewModels
             RenumberSteps();
         }
 
-      
 
         #endregion
 

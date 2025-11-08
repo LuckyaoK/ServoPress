@@ -11,7 +11,6 @@ namespace ServoPress.Models
         public override string Summary => $"位置: {Position} mm, 速度: {Speed} mm/s, 最大力: {MaxForce} N";
 
         [ObservableProperty]
-        [Required(ErrorMessage = "必须填写描述")]
         private string _description = "MOTION";
 
         /// <summary>
@@ -25,7 +24,6 @@ namespace ServoPress.Models
         /// </summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Summary))]
-        [Range(0, 100, ErrorMessage = "位置必须在 0 到 100 之间")]
         private double _position = 60.00;
 
         /// <summary>
@@ -33,7 +31,6 @@ namespace ServoPress.Models
         /// </summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Summary))]
-        [Range(0, 100, ErrorMessage = "位置必须在 0 到 100 之间")]
         private double _speed = 50.00;
 
         /// <summary>
@@ -41,21 +38,18 @@ namespace ServoPress.Models
         /// </summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Summary))]
-        [Range(0, 100.0, ErrorMessage = "位置必须在 0 到 100 之间")]
         private double _maxForce = 1000;
 
-       /// <summary>
-       /// 加速度
-       /// </summary>
+        /// <summary>
+        /// 加速度
+        /// </summary>
         [ObservableProperty]
-        [Range(0, 100, ErrorMessage = "位置必须在 0 到 100 之间")]
         private double _acceleration = 0;
 
         /// <summary>
         /// 减速度
         /// </summary>
         [ObservableProperty]
-        [Range(0, 100, ErrorMessage = "位置必须在 0 到 100 之间")]
         private double _deceleration = 0;
     }
 }

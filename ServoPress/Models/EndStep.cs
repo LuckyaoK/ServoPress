@@ -16,7 +16,6 @@ namespace ServoPress.Models
 
 
         [ObservableProperty]
-        [Required(ErrorMessage = "必须填写描述")]
         private string _description = "SEQUENCE_END";
     }
 }

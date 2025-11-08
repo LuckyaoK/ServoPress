@@ -15,7 +15,6 @@ namespace ServoPress.Models
         public override string Summary => "等待信号";
 
         [ObservableProperty]
-        [Required(ErrorMessage = "必须填写描述")]
         private string _description = "WAIT";
        
     }

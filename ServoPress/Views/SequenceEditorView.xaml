@@ -442,7 +442,7 @@
                                VerticalAlignment="Center" MinWidth="25" Margin="0,0,10,0" TextAlignment="Center"/>
                     <TextBlock Text="{Binding StepType}" Grid.Column="1" Margin="0,0,20,0"  FontSize="15"  TextAlignment="Center" />
                     <TextBlock Text="{Binding Summary}"  Grid.Column="2"  FontSize="15"  TextAlignment="Left"/>
-                            
+
                 </Grid>
             </Border>
         </DataTemplate>
@@ -553,7 +553,7 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-   
+
                 <ListView Grid.Row="0"
                           ItemsSource="{Binding SequenceSteps}"
                           SelectedItem="{Binding SelectedStep, Mode=TwoWay}"

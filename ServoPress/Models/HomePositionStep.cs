@@ -18,14 +18,13 @@ namespace ServoPress.Models
         /// 描述
         /// </summary>
         [ObservableProperty]
-        [Required(ErrorMessage = "必须填写描述")]
         private string _description = "HOME_POSITION";
 
         /// <summary>
         /// 参考
         /// </summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(Summary))]
+       
         private string _reference = "绝对位移";
 
         /// <summary>
@@ -33,7 +32,6 @@ namespace ServoPress.Models
         /// </summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Summary))]
-        [Range(1, 10000, ErrorMessage = "延时必须在 1 到 10000 mm 之间")]
         private double _position = 0.00;
 
         /// <summary>
@@ -41,7 +39,6 @@ namespace ServoPress.Models
         /// </summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Summary))]
-        [Range(1, 10000, ErrorMessage = "延时必须在 1 到 10000 mm/s 之间")]
         private double _speed = 50.00;
 
         /// <summary>
@@ -49,7 +46,6 @@ namespace ServoPress.Models
         /// </summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Summary))]
-        [Range(1, 10000, ErrorMessage = "延时必须在 1 到 10000 N 之间")]
         private double _maxForce = 5000;
 
         /// <summary>
@@ -57,7 +53,6 @@ namespace ServoPress.Models
         /// </summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Summary))]
-        [Range(1, 10000, ErrorMessage = "延时必须在 1 到 10000 N 之间")]
         private double _minForce = -5000;
 
     }

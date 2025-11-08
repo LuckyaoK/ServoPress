@@ -16,12 +16,10 @@ namespace ServoPress.Models
         public override string Summary => $"延时: {Duration} ms";
 
         [ObservableProperty]
-        [Required(ErrorMessage = "必须填写描述")]
         private string _description = "TIMER";
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Summary))]
-        [Range(1, 10000, ErrorMessage = "延时必须在 1 到 10000 ms 之间")]
         private double _duration = 2000;
     }
 }

@@ -5,7 +5,7 @@ namespace ServoPress.Models
     /// <summary>
     /// 步序基类
     /// </summary>
-    public abstract partial class SequenceStep : ObservableValidator
+    public abstract partial class SequenceStep : ObservableObject
     {
         [ObservableProperty]
         private int _stepNumber;

@@ -15,7 +15,6 @@ namespace ServoPress.Models
         public override string Summary => $"标签ID: {LabelId}";
 
         [ObservableProperty]
-        [Required(ErrorMessage = "必须填写描述")]
         private string _description = "LABEL";
 
         [ObservableProperty]

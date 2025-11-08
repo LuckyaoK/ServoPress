@@ -23,7 +23,6 @@ namespace ServoPress.Models
         /// </summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Summary))]
-        [Required(ErrorMessage = "必须填写描述")]
         private MeasureMode _mode = MeasureMode.Start;
 
         /// <summary>
