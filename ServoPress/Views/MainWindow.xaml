@@ -127,10 +127,6 @@
                     <views:ProductionView />
                 </TabItem>
 
-                <TabItem Header="序列编辑">
-                    <views:SequenceEditorView />
-                </TabItem>
-
                 <TabItem Header="参数设置">
                     <views:SettingsView />
                 </TabItem>
