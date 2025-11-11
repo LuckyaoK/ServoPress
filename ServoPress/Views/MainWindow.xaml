@@ -89,12 +89,6 @@
                     </ListBoxItem>
                     <ListBoxItem>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📜" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="序列编辑" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem>
-                        <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🔧" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
                             <TextBlock Text="参数设置" VerticalAlignment="Center"/>
                         </StackPanel>
