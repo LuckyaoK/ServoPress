@@ -4,114 +4,36 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ServoPress.Models"
+             xmlns:views="clr-namespace:ServoPress.Views"
+             xmlns:viewmodels="clr-namespace:ServoPress.ViewModels"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1050">
+
     <!-- 
     子界面 1: 主页 (操作界面)
+    已修改为 4 工位布局
     -->
-    <Grid Margin="10">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2.5*"/>
-            <!-- 曲线区域 -->
-            <ColumnDefinition Width="1*"/>
-            <!-- 数据与控制区域 -->
-        </Grid.ColumnDefinitions>
-
-        <!-- 曲线区域 (背景已修改) -->
-        <Border Grid.Column="0" Background="#FFFAFAFA" BorderBrush="#FFD0D0D0" BorderThickness="1" CornerRadius="4" Padding="10">
-            <!-- 在这里放置您的曲线控件 (例如 ScottPlot, OxyPlot, LiveCharts) -->
-            <Grid>
-                <TextBlock Text="压装曲线 (力 vs 位移)" FontSize="20" Foreground="#FFA0A0A0" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5"/>
-            </Grid>
-        </Border>
-
-        <!-- 数据与控制区域 -->
-        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-            <GroupBox Header="当前程序">
-                <ComboBox SelectedIndex="0" Padding="5">
-                    <ComboBoxItem Content="MP101_PartA"/>
-                    <ComboBoxItem Content="MP102_PartB"/>
-                    <ComboBoxItem Content="MP200_Bearing"/>
-                </ComboBox>
-            </GroupBox>
-
-            <GroupBox Header="过程值 (Process Values)">
-                <!-- 过程值应使用 DataGrid 显示 -->
-                <DataGrid Height="150" CanUserResizeRows="False" CanUserResizeColumns="False">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
-                        <DataGridTextColumn Header="值" Binding="{Binding Value}" Width="Auto"/>
-                        <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="Auto"/>
-                    </DataGrid.Columns>
-                    <!-- 示例数据 -->
-                    <DataGrid.ItemsSource>
-                        <x:Array Type="{x:Type local:ProcessValue}">
-                            <local:ProcessValue Name="最大压力" Value="450.2" Unit="N"/>
-                            <local:ProcessValue Name="最终位移" Value="68.1" Unit="mm"/>
-                            <local:ProcessValue Name="Box 评估" Value="OK" Unit=""/>
-                        </x:Array>
-                    </DataGrid.ItemsSource>
-                </DataGrid>
-            </GroupBox>
-
-            <!-- 最终判定结果 (OK/NOK) - 新增 -->
-            <Border x:Name="FinalResultBorder" Background="#FF3D8B3D" CornerRadius="4" Padding="10" Margin="0,10,0,0" MinHeight="80">
-                <TextBlock x:Name="FinalResultText" 
-                           Text="OK" 
-                           FontSize="48" 
-                           FontWeight="Bold" 
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center"
-                           Foreground="White"/>
-                <!-- 
-                数据绑定提示: 
-                Background 应该绑定到判定结果 (例如: OK -> #FF3D8B3D, NOK -> #FFD9534F)
-                Text 应该绑定到判定结果 (例如: "OK" 或 "NOK")
-                -->
-            </Border>
-
-            <!-- 计数统计 - 新增 -->
-            <GroupBox Header="计数统计" Margin="0,10,0,0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Row 1: 合格 -->
-                    <TextBlock Text="合格" Grid.Row="0" Grid.Column="0" Margin="5" VerticalAlignment="Center" FontSize="14"/>
-                    <TextBlock Text="2961" Grid.Row="0" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14" FontWeight="Bold"/>
-                    <TextBlock Text="99.70%" Grid.Row="0" Grid.Column="2" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14"/>
-
-                    <!-- Row 2: 不合格 -->
-                    <TextBlock Text="不合格" Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center" FontSize="14"/>
-                    <TextBlock Text="9" Grid.Row="1" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14" FontWeight="Bold" Foreground="#FFD9534F"/>
-                    <TextBlock Text="0.30%" Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14" Foreground="#FFD9534F"/>
-
-                    <!-- Row 3: 总数 -->
-                    <TextBlock Text="总数" Grid.Row="2" Grid.Column="0" Margin="5" VerticalAlignment="Center" FontSize="14"/>
-                    <TextBlock Text="2970" Grid.Row="2" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14" FontWeight="Bold"/>
-                    <Button Content="计数清零" Grid.Row="2" Grid.Column="2" Margin="5" Padding="10,3" HorizontalAlignment="Right" Style="{StaticResource ResetButtonStyle}"/>
-                </Grid>
-            </GroupBox>
 
 
-            <!-- 循环控制 (使用自定义样式) -->
-            <Grid Margin="0,20,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="启 动" Style="{StaticResource StartButtonStyle}" Margin="5"/>
-                <Button Grid.Column="1" Content="停 止" Style="{StaticResource StopButtonStyle}" Margin="5"/>
-            </Grid>
-            <Button Content="复 位" Style="{StaticResource ResetButtonStyle}" Margin="5,10,5,5"/>
-        </StackPanel>
+    <Grid Margin="5">
+        <ItemsControl ItemsSource="{Binding Stations}">
+
+            <!-- 3. 定义布局：使用一个 2x2 的均匀网格 -->
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="2" Rows="2" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <!-- 4. 定义模板：告诉它每个 "StationViewModel" 
+                 都应该显示为一个 "StationView" UserControl -->
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <views:StationView DataContext="{Binding}" Margin="5" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+        </ItemsControl>
     </Grid>
 </UserControl>

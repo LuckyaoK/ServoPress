@@ -33,7 +33,6 @@
     <Folder Include="Properties\" />
     <Folder Include="Resources\Image\" />
     <Folder Include="Services\" />
-    <Folder Include="ViewModels\" />
   </ItemGroup>
 
   <ItemGroup>

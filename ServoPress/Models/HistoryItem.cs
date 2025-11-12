@@ -14,14 +14,6 @@ namespace ServoPress.Models
         public double MaxForce { get; set; }
     }
 
-    public class EvalWindow
-    {
-        public bool Enabled { get; set; }
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string Params { get; set; }
-    }
-
     public class PValueConfig
     {
         public string Name { get; set; }
