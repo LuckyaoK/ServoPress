@@ -4,19 +4,31 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:ServoPress.Views"
+        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         mc:Ignorable="d"
-        Title="伺服压机控制系统 V1.0" 
         Height="950" Width="1280"
         WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True" BorderThickness="1" 
+        BorderBrush="{StaticResource BorderBrush}"
         Background="White">
-    <Window.Resources>
+    <!-- (已修改) 边框和背景 -->
 
-        <!-- 覆盖顶部状态栏的 TextBlock 样式 (白色字体) -->
+    <Window.Resources>
+        <!-- 顶部状态栏的 TextBlock 样式 (白色字体) -->
         <Style x:Key="TopBarTextStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
             <Setter Property="Foreground" Value="White"/>
         </Style>
         <Style x:Key="TopBarLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-            <Setter Property="Foreground" Value="#FFD0D0D0"/>
+            <Setter Property="Foreground" Value="#FFD0E0FF"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+
+        <!-- (新) 侧边栏图标样式 -->
+        <Style x:Key="NavIconStyle" TargetType="svgc:SvgViewbox">
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Margin" Value="0,0,15,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
     </Window.Resources>
@@ -29,34 +41,39 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- 顶部状态栏 -->
+            <!-- 顶部自定义标题栏 -->
             <RowDefinition Height="*"/>
             <!-- 主内容区 -->
         </Grid.RowDefinitions>
 
-        <!-- 1. 顶部状态栏 (已修改) -->
-        <Border Grid.Row="0" Background="#FF007ACC" Padding="10,5" BorderBrush="#FF005A9E" BorderThickness="0,0,0,2">
-            <!-- ... 顶部状态栏 ... (文本样式已覆盖) -->
-            <Grid>
+        <!-- 1. 顶部自定义标题栏 (新) -->
+        <Border Grid.Row="0" Background="{StaticResource AccentBrush}" BorderBrush="#FF005A9E" BorderThickness="0,0,0,1" MinHeight="40">
+            <!-- (已修改) 背景 -->
+            <Grid x:Name="TitleBar" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <!-- 移除了原有的 Auto 列 (用于OK/NOK) -->
+                    <!-- Title -->
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- Window Controls -->
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <TextBlock Text="系统状态:" FontSize="16" VerticalAlignment="Center" Style="{StaticResource TopBarLabelStyle}"/>
-                    <TextBlock Text="运行中" FontSize="16" VerticalAlignment="Center" Foreground="#FF90EE90" Margin="10,0"/>
-                    <!-- 浅绿色 -->
-                    <TextBlock Text="程序号:" FontSize="16" VerticalAlignment="Center" Style="{StaticResource TopBarLabelStyle}" Margin="30,0,0,0"/>
-                    <TextBlock Text="MP101_PartA" FontSize="16" VerticalAlignment="Center" Style="{StaticResource TopBarTextStyle}" Margin="10,0"/>
+                <!-- 标题 (已居中) -->
+                <TextBlock Grid.Column="0" Text="伺服压机智能控制系统" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource TopBarTextStyle}" Margin="15,0,0,0"/>
+
+                <!-- 状态信息 (已移除) -->
+
+                <!-- 窗口控制按钮 (移至 Column 1) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="MinimizeButton" Style="{StaticResource WindowControlButtonStyle}" Click="MinimizeButton_Click" ToolTip="最小化">
+                        <svgc:SvgViewbox Source="/Resources/Icons/Min.svg" Width="16" Height="16"/>
+                    </Button>
+                    <Button x:Name="MaximizeButton" Style="{StaticResource WindowControlButtonStyle}" Click="MaximizeButton_Click" ToolTip="最大化">
+                        <svgc:SvgViewbox Source="/Resources/Icons/Max.svg" Width="16" Height="16"/>
+                    </Button>
+                    <Button x:Name="CloseButton" Style="{StaticResource WindowCloseButtonStyle}" Click="CloseButton_Click" ToolTip="关闭">
+                        <svgc:SvgViewbox Source="/Resources/Icons/Close.svg" Width="16" Height="16"/>
+                    </Button>
                 </StackPanel>
-
-                <!-- Logo 或标题 -->
-                <TextBlock Grid.Column="1" Text="伺服压机智能控制系统" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource TopBarTextStyle}"/>
-
-                <!-- 最终判定结果 (OK/NOK) - 已从此移除 -->
-
             </Grid>
         </Border>
 
@@ -69,49 +86,69 @@
                 <!-- 右侧内容区 -->
             </Grid.ColumnDefinitions>
 
-            <!-- 2.1. 左侧导航栏 (已修改背景) -->
-            <Border Grid.Column="0" Background="#FFFAFAFA" BorderBrush="#FFD0D0D0" BorderThickness="0,0,1,0">
-                <ListBox x:Name="NavListBox"
-                         BorderThickness="0"
-                         Background="Transparent"
-                         Width="220"
-                         ItemContainerStyle="{StaticResource NavButtonStyle}"
-                         SelectedIndex="0">
-                    <!-- 
-                    ItemContainerStyle 引用了 NavButtonStyle，
-                    该样式现在定义在 App.xaml 中
-                    -->
-                    <ListBoxItem>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🏠" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="实时生产" VerticalAlignment="Center"/>
+            <!-- 2.1. 左侧导航栏 (已修改背景和布局) -->
+            <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                <!-- (已修改) 背景和边框 -->
+                <DockPanel>
+                    <!-- (新) 设备状态模块 -->
+                    <Border DockPanel.Dock="Top" Background="{StaticResource AccentBrush}" Margin="10" CornerRadius="4" Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="设备状态:" FontSize="14" Style="{StaticResource TopBarLabelStyle}"/>
+                            <TextBlock Text="运行中" FontSize="16" FontWeight="Bold" Foreground="#FF90EE90" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="程序号:" FontSize="14" Style="{StaticResource TopBarLabelStyle}"/>
+                            <TextBlock Text="MP101_PartA" FontSize="16" FontWeight="Bold" Style="{StaticResource TopBarTextStyle}"/>
                         </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🔧" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="参数设置" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📊" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="历史数据" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="⚙️" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="系统管理" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                </ListBox>
+                    </Border>
+
+                    <!-- 导航列表 (自动填充剩余空间) -->
+                    <ListBox x:Name="NavListBox"
+                             DockPanel.Dock="Top"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             Width="220"
+                             ItemContainerStyle="{StaticResource NavButtonStyle}"
+                             SelectedIndex="0">
+
+                        <!-- (已修改) 使用专业 SVG 图标, ItemContainerStyle 已在 App.xaml 中更新 -->
+                        <ListBoxItem>
+                            <StackPanel Orientation="Horizontal">
+                                <svgc:SvgViewbox Source="/Resources/Icons/Home.svg" Style="{StaticResource NavIconStyle}"/>
+                                <TextBlock Text="实时生产" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem>
+                            <StackPanel Orientation="Horizontal">
+                                <svgc:SvgViewbox Source="/Resources/Icons/Edit.svg" Style="{StaticResource NavIconStyle}"/>
+                                <TextBlock Text="序列编辑" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem>
+                            <StackPanel Orientation="Horizontal">
+                                <svgc:SvgViewbox Source="/Resources/Icons/Settings.svg" Style="{StaticResource NavIconStyle}"/>
+                                <TextBlock Text="参数设置" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem>
+                            <StackPanel Orientation="Horizontal">
+                                <svgc:SvgViewbox Source="/Resources/Icons/History.svg" Style="{StaticResource NavIconStyle}"/>
+                                <TextBlock Text="历史数据" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem>
+                            <StackPanel Orientation="Horizontal">
+                                <svgc:SvgViewbox Source="/Resources/Icons/Admin.svg" Style="{StaticResource NavIconStyle}"/>
+                                <TextBlock Text="系统管理" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ListBoxItem>
+                    </ListBox>
+                </DockPanel>
             </Border>
 
-            <!-- 2.2. 右侧内容区 (保持不变) -->
+            <!-- 2.2. 右侧内容区 (已修改背景) -->
             <TabControl Grid.Column="1"
                         x:Name="MainContentTabs"
-                        Background="Transparent"
+                        Background="{StaticResource WindowBackgroundBrush}"
                         BorderThickness="0"
                         TabStripPlacement="Left"
                         SelectedIndex="{Binding ElementName=NavListBox, Path=SelectedIndex}">
@@ -126,7 +163,7 @@
                 <TabItem Header="主页">
                     <views:ProductionView />
                 </TabItem>
-
+                
                 <TabItem Header="参数设置">
                     <views:SettingsView />
                 </TabItem>

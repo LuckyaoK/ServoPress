@@ -113,6 +113,7 @@ namespace ServoPress.ViewModels
                 Enabled = true,
                 Name = "Unibox 0", // Name 可能不再需要显示，但保留
                 Type = "UniBox",
+                
                 StartX = 2.65,
                 EndX = 4.58,
                 StartY = 12.40,
@@ -126,7 +127,7 @@ namespace ServoPress.ViewModels
             GenerateSampleCurve();
         }
 
-        private void InitializePlot()
+        private void InitializePlot()   
         {
             PlotModel = new PlotModel
             {

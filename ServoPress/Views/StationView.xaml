@@ -10,11 +10,6 @@
              d:DesignHeight="450" d:DesignWidth="600"
              d:DataContext="{d:DesignInstance Type=viewmodels:StationViewModel, IsDesignTimeCreatable=True}">
 
-    <!-- 
-    单个工位的主布局
-    Row 0: 曲线
-    Row 1: 选项卡 (过程值, 统计, Unibox)
-    -->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -166,9 +161,9 @@
                             <TextBox Grid.Row="1" Grid.Column="3" Margin="5" Text="{Binding EndX, StringFormat={}{0:F2}}"/>
 
                             <!-- Row 2: StartY / EndY -->
-                            <TextBlock Text="StartY (KN):" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
+                            <TextBlock Text="StartY (N):" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
                             <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Text="{Binding StartY, StringFormat={}{0:F2}}"/>
-                            <TextBlock Text="EndY (KN):" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
+                            <TextBlock Text="EndY (N):" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
                             <TextBox Grid.Row="2" Grid.Column="3" Margin="5" Text="{Binding EndY, StringFormat={}{0:F2}}"/>
 
                             <!-- Row 3: 确认 / 删除 / 重进入 (布局已调整) -->

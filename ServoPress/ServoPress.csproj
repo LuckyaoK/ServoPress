@@ -21,6 +21,9 @@
     <None Remove="Resources\Icons\MoveDown.svg" />
     <None Remove="Resources\Icons\MoveUp.svg" />
     <None Remove="Resources\Icons\Save.svg" />
+    <None Remove="Resources\Icons\Min.svg" />
+    <None Remove="Resources\Icons\Max.svg" />
+    <None Remove="Resources\Icons\Close.svg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,7 +35,6 @@
   <ItemGroup>
     <Folder Include="Properties\" />
     <Folder Include="Resources\Image\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +50,9 @@
     <Resource Include="Resources\Icons\MoveDown.svg" />
     <Resource Include="Resources\Icons\MoveUp.svg" />
     <Resource Include="Resources\Icons\Save.svg" />
+    <Resource Include="Resources\Icons\Min.svg" />
+    <Resource Include="Resources\Icons\Max.svg" />
+    <Resource Include="Resources\Icons\Close.svg" />
   </ItemGroup>
 
 </Project>
