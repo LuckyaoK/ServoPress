@@ -64,20 +64,34 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <!-- 最终判定结果 -->
-                        <Border Grid.Column="1" 
-                                Background="{Binding ResultBrush}" 
-                                CornerRadius="4" 
-                                Margin="10,0,0,0" 
-                                MinWidth="100"
-                                VerticalAlignment="Stretch">
-                            <TextBlock Text="{Binding Result}" 
-                                       FontSize="28" 
+                        <!-- 最终判定结果 (已修改) -->
+                        <StackPanel Grid.Column="1" 
+                                    Margin="10,0,0,0" 
+                                    VerticalAlignment="Center" 
+                                    HorizontalAlignment="Center">
+
+                            <!-- 新增: 判定结果标题 -->
+                            <TextBlock Text="判定结果" 
+                                       FontSize="16" 
                                        FontWeight="Bold" 
                                        HorizontalAlignment="Center" 
-                                       VerticalAlignment="Center"
-                                       Foreground="White"/>
-                        </Border>
+                                       Margin="0,5,0,10"
+                                       Foreground="#FF007ACC"/>
+                            <!-- 使用主题蓝色 -->
+
+                            <Border Background="{Binding ResultBrush}" 
+                                    CornerRadius="4" 
+                                    MinWidth="120"
+                                    MinHeight="120"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Result}" 
+                                           FontSize="32" 
+                                           FontWeight="Bold" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           Foreground="White"/>
+                            </Border>
+                        </StackPanel>
                     </Grid>
                 </TabItem>
 
@@ -157,9 +171,20 @@
                             <TextBlock Text="EndY (KN):" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
                             <TextBox Grid.Row="2" Grid.Column="3" Margin="5" Text="{Binding EndY, StringFormat={}{0:F2}}"/>
 
-                            <!-- Row 3: 确认 / 重进入 (布局已调整) -->
-                            <Button Content="确认" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" 
-                                    Command="{Binding DataContext.ConfirmChangesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            <!-- Row 3: 确认 / 删除 / 重进入 (布局已调整) -->
+                            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
+                                <Button Content="确认" Margin="5" 
+                                        Command="{Binding DataContext.ConfirmChangesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                <!-- 
+                                新增: 删除Box按钮 
+                                使用 StopButtonStyle (红色) 来警示
+                                -->
+                                <Button Content="删除Box" Margin="5" 
+                                        Style="{StaticResource StopButtonStyle}" 
+                                        />
+                                <!-- TODO: 在 ViewModel 中为此按钮创建和绑定一个 DeleteBoxCommand -->
+                            </StackPanel>
+
 
                             <CheckBox Content="允许重复进入" Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" 
                                       VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5"
