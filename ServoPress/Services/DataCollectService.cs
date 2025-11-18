@@ -70,7 +70,7 @@ namespace ServoPress.Services
 
                 // 2. 采集完成，触发事件
                 //    (注意: 此时我们在后台线程)
-                OnDataAcquired?.Invoke(result);
+                OnDataCollect?.Invoke(result);
             }
             catch (Exception ex)
             {
