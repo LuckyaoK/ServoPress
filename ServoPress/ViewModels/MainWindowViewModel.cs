@@ -83,13 +83,8 @@ namespace ServoPress.ViewModels
                 // 1. 根据 ID 找到对应的工位 ViewModel
                 var stationVM = ProductionVM.Stations.FirstOrDefault(s => s.Id == result.StationId);
                 if (stationVM == null) return;
-
-                // 2. [关键] 将数据封送到 UI 线程
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    // 3. 在 UI 线程上更新 ViewModel
-                    stationVM.UpdateWithNewData(result);
-                });
+                // 3. 在 UI 线程上更新 ViewModel
+                stationVM.UpdateWithNewData(result);
             }
             catch (Exception ex)
             {
@@ -135,7 +130,7 @@ namespace ServoPress.ViewModels
                         {
                             int stationId = i + 1;
                             Debug.WriteLine($"[PLC Polling] 检测到工位 {stationId} 触发");
-                            _ = _dataCollectService.TriggerCollectAsync(stationId);
+                            _ =_dataCollectService.TriggerCollectAsync(stationId);
                         }
 
                         //重置
