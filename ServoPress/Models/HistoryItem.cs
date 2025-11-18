@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,11 +22,16 @@ namespace ServoPress.Models
         public string Param { get; set; }
     }
 
-    public class ProcessValue
+    public partial class ProcessValue:ObservableObject
     {
-        public string Name { get; set; }
-        public string Value { get; set; }
-        public string Unit { get; set; }
+        [ObservableProperty]
+        public string _name;
+
+        [ObservableProperty]
+        public string _value;
+
+        [ObservableProperty]
+        public string _unit;
     }
 
 }

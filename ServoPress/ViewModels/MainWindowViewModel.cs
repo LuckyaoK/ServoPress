@@ -39,7 +39,7 @@ namespace ServoPress.ViewModels
         private string _currentProgram = "MP101_PartA";
 
         // 触发地址
-        private readonly string[] _triggerAddresses = { "DB10.15.0" };
+        private readonly string[] _triggerAddresses = { "DB10.15.0", "DB10.16.0", "DB10.17.0", "DB10.18.0", };
         /// <summary>
         /// 生产页面的 ViewModel 实例
         /// </summary>
@@ -151,8 +151,6 @@ namespace ServoPress.ViewModels
             }
             Debug.WriteLine("[PlcService] 轮询已停止。");
         }
-
-
 
 
 

@@ -6,7 +6,7 @@ using OxyPlot.Axes;
 using OxyPlot.Series;
 using ServoPress.Models;
 using ServoPress.Services;
-using System.Collections.ObjectModel; // 保留，为 ProcessValues 和 ComboBox 选项
+using System.Collections.ObjectModel; 
 using System.Linq;
 using System.Windows.Media;
 
@@ -132,6 +132,9 @@ namespace ServoPress.ViewModels
 
         }
 
+        /// <summary>
+        /// 初始化图表
+        /// </summary>
         private void InitializePlot()   
         {
             PlotModel = new PlotModel
@@ -162,6 +165,12 @@ namespace ServoPress.ViewModels
             };
             PlotModel.Series.Add(_curveSeries);
         }
+
+
+        /// <summary>
+        /// 更新图表
+        /// </summary>
+        /// <param name="data"></param>
         public void UpdateWithNewData(DataResult data)
         {
             // 1. 更新判定结果
@@ -171,9 +180,7 @@ namespace ServoPress.ViewModels
             _curveSeries.Points.Clear();
             _curveSeries.Points.AddRange(data.CurveData);
             PlotModel.InvalidatePlot(true); // 刷新图表
-
             // 3. 更新过程值
-            // (确保 ProcessValues 集合已初始化)
             ProcessValues[0].Value = data.StartPosition.ToString("F2");
             ProcessValues[1].Value = data.EndPosition.ToString("F2");
             ProcessValues[2].Value = data.StartForce.ToString("F2");
@@ -194,7 +201,6 @@ namespace ServoPress.ViewModels
 
 
 
-
         [RelayCommand]
         private void ClearCount()
         {
@@ -204,11 +210,6 @@ namespace ServoPress.ViewModels
         }
 
 
-        /// <summary>
-        /// (已修改)
-        /// 当点击 "确认" 时，不再自己处理，而是发送一个全局消息
-        /// 请求 MainWindowViewModel 来保存 *所有* 工位的设置。
-        /// </summary>
         [RelayCommand]
         private void ConfirmChanges()
         {
