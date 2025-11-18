@@ -118,7 +118,7 @@
 
                             <TextBlock Text="总数" Grid.Row="2" Grid.Column="0" Margin="5" VerticalAlignment="Center" FontSize="14"/>
                             <TextBlock Text="{Binding TotalCount}" Grid.Row="2" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14" FontWeight="Bold"/>
-                            <Button Content="计数清零" Grid.Row="2" Grid.Column="2" Margin="5" Padding="10,3" HorizontalAlignment="Right" Style="{StaticResource ResetButtonStyle}" Command="{Binding ClearCountCommand}"/>
+                            <Button Content="计数清零" Grid.Row="2" Grid.Column="2" Margin="5" Padding="10,3" HorizontalAlignment="Right" Style="{StaticResource BaseButtonStyle}" Command="{Binding ClearCountCommand}"/>
                         </Grid>
                     </GroupBox>
                 </TabItem>

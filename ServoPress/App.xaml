@@ -130,19 +130,21 @@
 
         <!-- 基础按钮样式 (已修改) -->
         <Style x:Key="BaseButtonStyle" TargetType="Button">
+            <Style.Resources>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                    <Setter Property="Foreground" 
+                            Value="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                </Style>
+            </Style.Resources>
+            <!-- =============================================================== -->
+
             <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
             <Setter Property="Foreground" Value="White"/>
-
-            <!-- 
-              新增: 强制按钮内的 TextBlock (或其他文本元素) 继承此白色, 
-              以覆盖全局的 TextBlock 样式。
-            -->
-            <Setter Property="TextElement.Foreground" Value="White"/>
-
             <Setter Property="BorderBrush" Value="#FF005A9E"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="FontSize" Value="14"/>
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
