@@ -10,7 +10,6 @@ namespace ServoPress.Views
         public ProductionView()
         {
             InitializeComponent();
-            this.DataContext = new ServoPress.ViewModels.ProductionViewModel();
         }
     }
 }

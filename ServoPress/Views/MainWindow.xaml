@@ -109,8 +109,8 @@
                         <StackPanel>
                             <TextBlock Text="设备状态:" FontSize="14" Style="{StaticResource TopBarLabelStyle}"/>
                             <TextBlock Text="运行中" FontSize="16" FontWeight="Bold" Foreground="#FF90EE90" Margin="0,0,0,10"/>
-                            <TextBlock Text="程序号:" FontSize="14" Style="{StaticResource TopBarLabelStyle}"/>
-                            <TextBlock Text="MP101_PartA" FontSize="16" FontWeight="Bold" Style="{StaticResource TopBarTextStyle}"/>
+                            <TextBlock Text="产品型号:" FontSize="14" Style="{StaticResource TopBarLabelStyle}"/>
+                            <TextBlock Text="Y30" FontSize="16" FontWeight="Bold" Style="{StaticResource TopBarTextStyle}"/>
                         </StackPanel>
                     </Border>
 
@@ -190,7 +190,7 @@
                 </TabControl.ItemContainerStyle>
 
                 <TabItem Header="主页">
-                    <views:ProductionView />
+                    <views:ProductionView DataContext="{Binding ProductionVM}" />
                 </TabItem>
 
                 <TabItem Header="参数设置">

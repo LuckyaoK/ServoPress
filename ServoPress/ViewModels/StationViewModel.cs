@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using ServoPress.Models;
+using ServoPress.Services;
 using System.Collections.ObjectModel; // 保留，为 ProcessValues 和 ComboBox 选项
 using System.Linq;
 using System.Windows.Media;
@@ -80,13 +82,18 @@ namespace ServoPress.ViewModels
 
         // 统计 (保留)
         [ObservableProperty]
-        private int _okCount = 0;
+        private int _okCount;
         [ObservableProperty]
-        private int _nokCount = 0;
+        private int _nokCount;
+
         [ObservableProperty]
-        private int _totalCount = 0;
+        private double _yield;
+
         [ObservableProperty]
-        private double _yield = 100.0;
+        public int _totalCount;
+        //  曲线系列引用
+        private LineSeries _curveSeries;
+
 
         public StationViewModel()
         {
@@ -123,8 +130,6 @@ namespace ServoPress.ViewModels
                 AllowReentry = true
             };
 
-            // 生成示例曲线
-            GenerateSampleCurve();
         }
 
         private void InitializePlot()   
@@ -149,44 +154,59 @@ namespace ServoPress.ViewModels
                 Maximum = 16
             });
         }
-
-        private void GenerateSampleCurve()
+        public void UpdateWithNewData(DataResult data)
         {
-            var lineSeries = new LineSeries
-            {
-                Title = "Line0",
-                Color = OxyColors.Black,
-                StrokeThickness = 2
-            };
+            // 1. 更新判定结果
+            Result = data.Result; // OnResultChanged 会自动更新背景色
 
-            // 模拟截图中的曲线
-            lineSeries.Points.Add(new DataPoint(0, 1));
-            lineSeries.Points.Add(new DataPoint(1, 6));
-            lineSeries.Points.Add(new DataPoint(1.5, 7.5));
-            lineSeries.Points.Add(new DataPoint(2, 7));
-            lineSeries.Points.Add(new DataPoint(2.5, 8));
-            lineSeries.Points.Add(new DataPoint(3, 11));
-
-            PlotModel.Series.Add(lineSeries);
+            // 2. 更新曲线
+            _curveSeries.Points.Clear();
+            _curveSeries.Points.AddRange(data.CurveData);
             PlotModel.InvalidatePlot(true); // 刷新图表
+
+            // 3. 更新过程值
+            // (确保 ProcessValues 集合已初始化)
+            ProcessValues[0].Value = data.StartPosition.ToString("F2");
+            ProcessValues[1].Value = data.EndPosition.ToString("F2");
+            ProcessValues[2].Value = data.StartForce.ToString("F2");
+            ProcessValues[3].Value = data.MaxForce.ToString("F2");
+
+            // 4. 更新统计
+            if (data.IsOk)
+            {
+                OkCount++;
+            }
+            else
+            {
+                NokCount++;
+            }
+            TotalCount++;
+            Yield = (double)OkCount / TotalCount * 100.0;
         }
+
+
+
 
         [RelayCommand]
         private void ClearCount()
         {
             OkCount = 0;
             NokCount = 0;
-            TotalCount = 0;
-            Yield = 100.0;
+            Yield = 0;
         }
 
 
+        /// <summary>
+        /// (已修改)
+        /// 当点击 "确认" 时，不再自己处理，而是发送一个全局消息
+        /// 请求 MainWindowViewModel 来保存 *所有* 工位的设置。
+        /// </summary>
         [RelayCommand]
         private void ConfirmChanges()
         {
-            // TODO: 在此实现 "确认" 逻辑
-            // 例如，将 UniboxSettings 的更改发送到硬件或保存
-            OnPropertyChanged(nameof(UniboxSettings));
+            // 3. 发送保存请求消息
+            WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
         }
+
     }
 }

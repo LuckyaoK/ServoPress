@@ -38,6 +38,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="HslCommunication">
+      <HintPath>..\lib\HslCommunication.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Resources\Icons\HomePosition.svg" />
     <Resource Include="Resources\Icons\Jump.svg" />
     <Resource Include="Resources\Icons\Label.svg" />
