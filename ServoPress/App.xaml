@@ -16,12 +16,12 @@
 
         <!-- 基础字体样式 (已修改字体和颜色) -->
         <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
             <Setter Property="FontFamily" Value="Microsoft YaHei"/>
         </Style>
 
         <!-- 左侧导航按钮样式 (浅色主题) -->
         <Style x:Key="NavButtonStyle" TargetType="ListBoxItem">
+            <!-- ... (内容保持不变) ... -->
             <Setter Property="Padding" Value="20,15"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -57,6 +57,7 @@
 
         <!-- 窗口控制按钮样式 (用于蓝色顶栏) -->
         <Style x:Key="WindowControlButtonStyle" TargetType="Button">
+            <!-- ... (内容保持不变) ... -->
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="46"/>
@@ -98,46 +99,9 @@
         </Style>
 
 
-        <!-- GroupBox 样式 (浅色主题) -->
-        <Style TargetType="GroupBox">
-            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
-            <Setter Property="Background" Value="{StaticResource ContentBackgroundBrush}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="GroupBox">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <Border Grid.Row="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,0,1" CornerRadius="4,4,0,0" Padding="8,5">
-                                <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" TextElement.Foreground="{TemplateBinding Foreground}"/>
-                            </Border>
-                            <Border Grid.Row="1" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,0,1,1" CornerRadius="0,0,4,4" Background="{TemplateBinding Background}">
-                                <ContentPresenter Margin="{TemplateBinding Padding}"/>
-                            </Border>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
 
         <!-- 基础按钮样式 (已修改) -->
         <Style x:Key="BaseButtonStyle" TargetType="Button">
-            <Style.Resources>
-                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                    <Setter Property="Foreground" 
-                            Value="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                </Style>
-            </Style.Resources>
-            <!-- =============================================================== -->
-
             <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#FF005A9E"/>
@@ -164,10 +128,12 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
         <Style TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}"/>
 
         <!-- 信号颜色按钮 (保持不变) -->
         <Style x:Key="StartButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <!-- ... (内容保持不变) ... -->
             <Setter Property="Background" Value="#FF3D8B3D"/>
             <Setter Property="BorderBrush" Value="#FF4CAF50"/>
             <Setter Property="FontSize" Value="18"/>
@@ -183,6 +149,7 @@
             </Style.Triggers>
         </Style>
         <Style x:Key="StopButtonStyle" TargetType="Button" BasedOn="{StaticResource StartButtonStyle}">
+            <!-- ... (内容保持不变) ... -->
             <Setter Property="Background" Value="#FFB71C1C"/>
             <Setter Property="BorderBrush" Value="#FFD32F2F"/>
             <Style.Triggers>
@@ -199,8 +166,6 @@
         <Style x:Key="ResetButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
             <Setter Property="Background" Value="#FFFBC02D"/>
             <Setter Property="BorderBrush" Value="#FFFFA000"/>
-            <!-- 字体颜色改为 White -->
-            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Padding" Value="12,8"/>
             <Style.Triggers>
@@ -210,8 +175,41 @@
             </Style.Triggers>
         </Style>
 
+        <!-- GroupBox 样式 (浅色主题) -->
+        <Style TargetType="GroupBox">
+            <!-- ... (内容保持不变) ... -->
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Background" Value="{StaticResource ContentBackgroundBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GroupBox">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,0,1" CornerRadius="4,4,0,0" Padding="8,5">
+                                <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" TextElement.Foreground="{TemplateBinding Foreground}"/>
+                            </Border>
+                            <Border Grid.Row="1" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,0,1,1" CornerRadius="0,0,4,4" Background="{TemplateBinding Background}">
+                                <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- DataGrid 样式 (浅色主题) -->
         <Style TargetType="DataGrid">
+            <!-- ... (内容保持不变) ... -->
             <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
@@ -228,6 +226,7 @@
 
         <!-- DataGrid 列标题 (已修改) -->
         <Style TargetType="DataGridColumnHeader">
+            <!-- ... (内容保持不变) ... -->
             <Setter Property="Background" Value="#FFF0F0F0"/>
             <!-- 字体颜色改为 TextBrush (黑色) -->
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
@@ -239,6 +238,7 @@
 
         <Style TargetType="DataGridCell">
             <Setter Property="Padding" Value="5"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
