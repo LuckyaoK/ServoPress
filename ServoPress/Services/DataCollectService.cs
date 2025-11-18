@@ -50,7 +50,7 @@ namespace ServoPress.Services
         /// <summary>
         /// 当数据采集并分析完成后，触发此事件
         /// </summary>
-        public event Action<DataResult> OnDataAcquired;
+        public event Action<DataResult> OnDataCollect;
 
         private bool _isBusy = false; // 确保同一时间只采一个
 
@@ -60,7 +60,6 @@ namespace ServoPress.Services
         public async Task TriggerCollectAsync(int stationId)
         {
             if (_isBusy ) return; // 如果正在采集，则忽略新的触发信号
-
             _isBusy = true;
             Debug.WriteLine($"[DataAcquisitionService] 工位 {stationId} 开始采集...");
 

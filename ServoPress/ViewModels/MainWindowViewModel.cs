@@ -46,7 +46,7 @@ namespace ServoPress.ViewModels
         public ProductionViewModel ProductionVM { get; }
 
 
-        private CancellationTokenSource _cts;
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private DataCollectService _dataCollectService;
         private PlcCommunicationService _plcService;
 
@@ -68,10 +68,10 @@ namespace ServoPress.ViewModels
             // 3. 初始化服务
             _dataCollectService = new DataCollectService();
             // (修改) 实例化新的服务
-            _plcService = new PlcCommunicationService("192.168.1.10");
+            _plcService = new PlcCommunicationService("127.0.0.1");
 
             // 4. 订阅数据采集完成事件
-            _dataCollectService.OnDataAcquired += OnDataCollectHandler;
+            _dataCollectService.OnDataCollect += OnDataCollectHandler;
 
             Start();
         }
@@ -137,6 +137,10 @@ namespace ServoPress.ViewModels
                             Debug.WriteLine($"[PLC Polling] 检测到工位 {stationId} 触发");
                             _ = _dataCollectService.TriggerCollectAsync(stationId);
                         }
+
+                        //重置
+                        var writeResult = _plcService.WriteBool(address, false);
+
                     }
 
                     // 轮询间隔

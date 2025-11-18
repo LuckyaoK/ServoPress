@@ -153,6 +153,14 @@ namespace ServoPress.ViewModels
                 Minimum = -2,
                 Maximum = 16
             });
+
+            _curveSeries = new LineSeries
+            {
+                Title = "Line0",
+                Color = OxyColors.Black,
+                StrokeThickness = 2
+            };
+            PlotModel.Series.Add(_curveSeries);
         }
         public void UpdateWithNewData(DataResult data)
         {
