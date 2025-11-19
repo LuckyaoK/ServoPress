@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace ServoPress.Models
 {
+    /// <summary>
+    /// 评估窗口
+    /// </summary>
     public class EvalWindow
     {
         public bool Enabled { get; set; }

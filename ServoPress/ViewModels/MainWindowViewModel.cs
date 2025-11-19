@@ -14,9 +14,8 @@ using System.Windows;
 
 namespace ServoPress.ViewModels
 {
-    /// <summary>
-    /// MainWindow 的 ViewModel，负责处理窗口状态和命令
-    /// </summary>
+
+
     public partial class MainWindowViewModel : ObservableObject
     {
         // 1. 绑定到 Window.WindowState
@@ -32,17 +31,12 @@ namespace ServoPress.ViewModels
         private bool _isCloseRequested;
 
       
-        /// <summary>
-        /// 当前加载的程序号 (用于命名配置文件)
-        /// </summary>
         [ObservableProperty]
         private string _currentProgram = "MP101_PartA";
 
         // 触发地址
         private readonly string[] _triggerAddresses = { "DB10.15.0", "DB10.16.0", "DB10.17.0", "DB10.18.0", };
-        /// <summary>
-        /// 生产页面的 ViewModel 实例
-        /// </summary>
+
         public ProductionViewModel ProductionVM { get; }
 
 
@@ -74,22 +68,7 @@ namespace ServoPress.ViewModels
             Start();
         }
 
-        private void OnDataCollectHandler(DataResult result)
-        {
-            try
-            {
-                // 1. 根据 ID 找到对应的工位 ViewModel
-                var stationVM = ProductionVM.Stations.FirstOrDefault(s => s.Id == result.StationId);
-                if (stationVM == null) return;
-                // 3. 在 UI 线程上更新 ViewModel
-                stationVM.UpdateWithNewData(result);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[MainWindowViewModel] 更新 UI 失败: {ex.Message}");
-            }
-        }
-
+       
 
         /// <summary>
         /// 启动服务
@@ -151,7 +130,20 @@ namespace ServoPress.ViewModels
         }
 
 
+        private void OnDataCollectHandler(DataResult result)
+        {
+            try
+            {
 
+                var stationVM = ProductionVM.Stations.FirstOrDefault(s => s.Id == result.StationId);
+                if (stationVM == null) return;
+                stationVM.UpdateWithNewData(result);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[MainWindowViewModel] 更新 UI 失败: {ex.Message}");
+            }
+        }
         /// <summary>
         /// 执行保存的业务逻辑
         /// </summary>

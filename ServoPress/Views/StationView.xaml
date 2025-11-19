@@ -22,7 +22,7 @@
         <Border Grid.Row="0" BorderBrush="#FFD0D0D0" BorderThickness="1" Background="#FFFAFAFA" Margin="5" CornerRadius="4">
             <Grid>
                 <!-- OxyPlot 曲线控件 -->
-                <oxy:PlotView Model="{Binding PlotModel}" />
+                <oxy:PlotView  x:Name="PlotView1" Model="{Binding PlotModel}" MouseDown="PlotView1_MouseDown" MouseMove="PlotView1_MouseMove" MouseUp="PlotView1_MouseUp" />
 
                 <!-- 
                 工位名称 TextBlock 已移除，
@@ -124,7 +124,7 @@
                 </TabItem>
 
                 <!-- 参数设置 -> 改名为 "Unibox" -->
-                <TabItem Header="Unibox">
+                <TabItem Header="Unibox" Height="20" VerticalAlignment="Bottom">
                     <Grid Margin="5">
                         <!-- 
                         此 Grid 绑定到 ViewModel 中的 UniboxSettings 属性
@@ -147,12 +147,12 @@
                             <TextBlock Text="进入方向:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
                             <ComboBox Grid.Row="0" Grid.Column="1" Margin="5"
                                       ItemsSource="{Binding DataContext.EntryDirectionsOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                      SelectedItem="{Binding EntryDirection}"/>
+                                      SelectedItem="{Binding SelectedEntryDirection}"/>
 
                             <TextBlock Text="退出方向:" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
                             <ComboBox Grid.Row="0" Grid.Column="3" Margin="5"
                                       ItemsSource="{Binding DataContext.ExitDirectionsOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                      SelectedItem="{Binding ExitDirection}"/>
+                                      SelectedItem="{Binding SelectedExitDirection}"/>
 
                             <!-- Row 1: StartX / EndX -->
                             <TextBlock Text="StartX (mm):" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
