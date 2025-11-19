@@ -2,14 +2,14 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging; // 1. 引入消息
 using HslCommunication.Profinet.Siemens;
-using ServoPress.Models; // 2. 引入 ProgramConfig
+using ServoPress.Models; 
 using ServoPress.Services;
-using System.Collections.Generic; // 3. 引入 List
+using System.Collections.Generic; 
 using System.Diagnostics;
-using System.IO; // 4. 引入 IO
-using System.Linq; // 5. 引入 Linq
-using System.Text.Json; // 6. 引入 JsonSerializer
-using System.Text.Json.Serialization; // 7. 引入 Json 源生成
+using System.IO;
+using System.Linq; 
+using System.Text.Json; 
+using System.Text.Json.Serialization; 
 using System.Windows;
 
 namespace ServoPress.ViewModels
@@ -64,7 +64,6 @@ namespace ServoPress.ViewModels
                 OnSaveAllUniboxes();
             });
 
-
             // 3. 初始化服务
             _dataCollectService = new DataCollectService();
             // (修改) 实例化新的服务
@@ -72,7 +71,6 @@ namespace ServoPress.ViewModels
 
             // 4. 订阅数据采集完成事件
             _dataCollectService.OnDataCollect += OnDataCollectHandler;
-
             Start();
         }
 
@@ -151,9 +149,6 @@ namespace ServoPress.ViewModels
             }
             Debug.WriteLine("[PlcService] 轮询已停止。");
         }
-
-
-
 
 
 
