@@ -26,7 +26,7 @@ namespace ServoPress.ViewModels
 
         // 工位名称
         [ObservableProperty]
-        private string _stationName = "Station";
+        private string _stationName = "";
 
         // 最终判定结果
         [ObservableProperty]
@@ -51,8 +51,11 @@ namespace ServoPress.ViewModels
         // 1. 添加方向选项集合 (供 View 中的 ComboBox 绑定)
         public ObservableCollection<string> EntryDirectionsOptions{ get; }= new ObservableCollection<string> { "上进", "下进", "左进", "右进" };
         public ObservableCollection<string> ExitDirectionsOptions { get; } = new ObservableCollection<string> { "上出", "下出", "左出", "右出", "不出" };
-        public ObservableCollection<EvalWindow> EvalWindows { get; } = new ObservableCollection<EvalWindow>();
+        
+        [ObservableProperty]
+        public ObservableCollection<EvalWindow> evalWindows;
 
+        public List<Unibox> uniboxes { get; }=new List<Unibox>();
         // 统计
         [ObservableProperty]
         private int _okCount;
@@ -67,7 +70,7 @@ namespace ServoPress.ViewModels
         //  曲线系列引用
         private LineSeries _curveSeries;
 
-     
+        private readonly CurveBoxService _curveBoxService;
         /// <summary>
         /// 自动生成的 OnResultChanged 方法，在 _result 属性更新时触发
         /// </summary>
@@ -100,10 +103,29 @@ namespace ServoPress.ViewModels
         }
         #endregion
 
-        public StationViewModel()
+
+        public StationViewModel(int stationId, CurveBoxService curveBoxService)
         {
+            Id=stationId;
+            StationName = $"工位 {Id}";
+            _curveBoxService = curveBoxService;
             // 初始化图表
             InitializePlot();
+
+            // 1. 初始化 EvalWindows 集合 (防止为空)
+            EvalWindows = new ObservableCollection<EvalWindow>();
+
+            // 1. 加载特定工位的配置
+            if (_curveBoxService != null)
+            {
+                var mySettings = _curveBoxService.GetSettingsForStation(Id);
+                foreach (var window in mySettings)
+                {
+                    EvalWindows.Add(window);
+                    AddAnnotationToPlot(window);
+                }
+            }
+
 
             // 初始化示例数据
             ProcessValues = new ObservableCollection<ProcessValue>
@@ -118,12 +140,8 @@ namespace ServoPress.ViewModels
             UniboxSettings = new EvalWindow
             {
                 Enabled = true,
-                StartX = 2.65,
-                EndX = 4.58,
-                StartY = 12.40,
-                EndY = 9.80,
-                EntryDirection = "下进",
-                ExitDirection = "不出",
+                EntryDirection = "左进",
+                ExitDirection = "右出",
                 AllowReentry = true
             };
         }
@@ -163,6 +181,16 @@ namespace ServoPress.ViewModels
             PlotModel.Series.Add(_curveSeries);
         }
 
+       
+        /// <summary>
+        /// 同步最新配置回服务用于保存
+        /// </summary>
+        public void SyncDataToService()
+        {
+            if (_curveBoxService == null) return;
+            // 更新 Service 中属于本工位的数据
+            _curveBoxService.UpdateStationSettings(Id, EvalWindows.ToList());
+        }
 
         /// <summary>
         /// 更新图表
@@ -218,15 +246,18 @@ namespace ServoPress.ViewModels
                 StartY = minY,
                 EndY = maxY,
                 EntryDirection = UniboxSettings.EntryDirection,
-                ExitDirection = UniboxSettings.ExitDirection
+                ExitDirection = UniboxSettings.ExitDirection,
+                AllowReentry= UniboxSettings.AllowReentry
             };
             UniboxSettings = evalWindow;
-          
-            // 2. 更新图表 (创建注解)
+            // 2. 数据存储
+            EvalWindows.Add(evalWindow);
+
+            // 3. 更新图表 (创建注解)
             AddAnnotationToPlot(evalWindow);
 
-            // 3. 数据存储
-            EvalWindows.Add(evalWindow);
+          
+  
             // 4. 刷新图表
             PlotModel.InvalidatePlot(true);
         }
@@ -293,10 +324,12 @@ namespace ServoPress.ViewModels
                 triangleAnnotation2 = CreatePoly(false, outBoxSide, triangleAnnotation2, window.StartX, window.EndX, window.StartY, window.EndY);
                 PlotModel.Annotations.Add(triangleAnnotation2);
             }
-
-            window.RectangleAnnotation = rect;
-            window.InSideAnnotation = triangleAnnotation1;
-            window.OutSideAnnotation = triangleAnnotation2;
+            uniboxes.Add(new Unibox
+            {
+                RectangleAnnotation = rect,
+                InSideAnnotation = triangleAnnotation1,
+                OutSideAnnotation=triangleAnnotation2
+            }) ;
         }
         /// <summary>
         /// 创建箭头
@@ -523,7 +556,7 @@ namespace ServoPress.ViewModels
 
 
         [RelayCommand]
-        private void ConfirmChanges()
+        private void SaveConfig()
         {
             // 发送保存请求消息
             WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
@@ -534,10 +567,10 @@ namespace ServoPress.ViewModels
         {
             try
             {
-                int count = EvalWindows.Count;
-                var values = PlotModel.Annotations.Where(p => p == EvalWindows[count - 1].RectangleAnnotation
-                || p == EvalWindows[count - 1].InSideAnnotation
-                || p == EvalWindows[count - 1].OutSideAnnotation).
+                int count = uniboxes.Count;
+                var values = PlotModel.Annotations.Where(p => p == uniboxes[count - 1].RectangleAnnotation
+                || p == uniboxes[count - 1].InSideAnnotation
+                || p == uniboxes[count - 1].OutSideAnnotation).
                 ToList();
 
                 foreach (var item in values)
@@ -546,6 +579,7 @@ namespace ServoPress.ViewModels
                 }
 
                 EvalWindows.RemoveAt(EvalWindows.Count - 1);
+                uniboxes.RemoveAt(uniboxes.Count - 1);
                 // 刷新图表
                 PlotModel.InvalidatePlot(true);
             }

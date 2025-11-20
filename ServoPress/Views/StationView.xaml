@@ -165,8 +165,8 @@
                             <TextBlock Text="EndY (N):" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
                             <TextBox Grid.Row="2" Grid.Column="3" Margin="5" Text="{Binding EndY, StringFormat={}{0:F2}}"/>
                             <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
-                                <Button Content="确认" Margin="5" 
-                                        Command="{Binding DataContext.ConfirmChangesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                <Button Content="保存配置" Margin="5" 
+                                        Command="{Binding DataContext.SaveConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                        
                                 <Button Content="删除Box" Margin="5" 
                                         Style="{StaticResource StopButtonStyle}" 

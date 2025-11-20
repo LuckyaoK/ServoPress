@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ServoPress.Models;
+using ServoPress.ViewModels;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json;
+using System.Windows;
 
 namespace ServoPress.Services
 {
@@ -77,6 +77,104 @@ namespace ServoPress.Services
     /// </summary>
     public class CurveBoxService
     {
+        //Key=工位ID, Value=该工位的Unibox列表
+        public Dictionary<int, List<EvalWindow>> StationSettings { get; private set; } = new Dictionary<int, List<EvalWindow>>();
+
+        private const string ConfigPath = "Product/UniBoxConfig.json";
+
+
+
+        public void LoadConfig()
+        {
+            try
+            {
+                if (!File.Exists(ConfigPath))
+                {
+                    StationSettings = new Dictionary<int, List<EvalWindow>>();
+                    return;
+                }
+
+                string jsonString = File.ReadAllText(ConfigPath);
+                ProgramConfig config = JsonSerializer.Deserialize(jsonString, ConfigJsonContext.Default.ProgramConfig);
+
+                if (config != null && config.StationSettingsDict != null)
+                {
+                    // JSON Key 是 string ("1", "2"), 转换为 int Key
+                    StationSettings = new Dictionary<int, List<EvalWindow>>();
+                    foreach (var kvp in config.StationSettingsDict)
+                    {
+                        if (int.TryParse(kvp.Key, out int id))
+                        {
+                            StationSettings[id] = kvp.Value;
+                        }
+                    }
+                }
+                else
+                {
+                    StationSettings = new Dictionary<int, List<EvalWindow>>();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"读取配置文件失败: {ex.Message}", "系统错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                StationSettings = new Dictionary<int, List<EvalWindow>>();
+            }
+        }
+
+        public void SaveConfig()
+        {
+            try
+            {
+                // 将 int Key 转换为 string Key 以便序列化
+                var exportDict = new Dictionary<string, List<EvalWindow>>();
+                foreach (var kvp in StationSettings)
+                {
+                    exportDict[kvp.Key.ToString()] = kvp.Value;
+                }
+
+                var configToSave = new ProgramConfig
+                {
+                    StationSettingsDict = exportDict
+                };
+
+                string dir = Path.GetDirectoryName(ConfigPath);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                string jsonString = JsonSerializer.Serialize(configToSave, ConfigJsonContext.Default.ProgramConfig);
+                File.WriteAllText(ConfigPath, jsonString);
+                MessageBox.Show("所有工位设置保存成功!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"保存配置文件失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+        /// <summary>
+        /// 根据工位ID获取其配置
+        /// </summary>
+        public List<EvalWindow> GetSettingsForStation(int stationId)
+        {
+            if (StationSettings.ContainsKey(stationId))
+            {
+                // 返回副本或引用皆可，这里直接返回引用以便读取
+                return StationSettings[stationId];
+            }
+            return new List<EvalWindow>();
+        }
+
+        /// <summary>
+        /// 更新指定工位的配置
+        /// </summary>
+        public void UpdateStationSettings(int stationId, List<EvalWindow> windows)
+        {
+            // 保存副本，防止引用问题
+            StationSettings[stationId] = new List<EvalWindow>(windows);
+        }
 
         /// <summary>
         /// 分析一条曲线（由点列表定义）与一个矩形框的完整相交历史

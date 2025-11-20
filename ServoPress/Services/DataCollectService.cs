@@ -54,6 +54,16 @@ namespace ServoPress.Services
 
         private bool _isBusy = false; // 确保同一时间只采一个
 
+
+        private readonly Dictionary<int, List<EvalWindow>> _stationSettings ;
+
+       
+        public DataCollectService(Dictionary<int, List<EvalWindow>> stationSettings)
+        {
+            _stationSettings = stationSettings;
+        }
+
+
         /// <summary>
         /// 外部 (PlcService) 调用此方法来启动一次采集
         /// </summary>
@@ -105,7 +115,16 @@ namespace ServoPress.Services
                 curve.Add(new DataPoint(pos, force));
             }
 
-            // 模拟分析和判定
+            // 根据配置设置进行判定
+            for(int i = 0; i < _stationSettings[stationId].Count;i++)
+            {
+                var value = _stationSettings[stationId][i].EndY;
+                if (force> value)
+                {
+
+                }
+            }
+           
             bool isOk = r.NextDouble() > 0.2; // 80% 概率 OK
             double maxForce = curve.Max(p => p.Y);
 

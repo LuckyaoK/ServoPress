@@ -34,6 +34,10 @@ namespace ServoPress.ViewModels
         [ObservableProperty]
         private string _currentProgram = "MP101_PartA";
 
+        // 公开 StationViewModel 供 View 绑定
+        [ObservableProperty]
+        private StationViewModel _stationVM;
+
         // 触发地址
         private readonly string[] _triggerAddresses = { "DB10.15.0", "DB10.16.0", "DB10.17.0", "DB10.18.0", };
 
@@ -45,27 +49,39 @@ namespace ServoPress.ViewModels
         private PlcCommunicationService _plcService;
 
 
+        private readonly CurveBoxService _curveBoxService;
+
 
         public MainWindowViewModel()
         {
-            // 1. 创建并持有 ProductionVM 实例
-            ProductionVM = new ProductionViewModel();
+            // 1. 初始化基础服务
+            _curveBoxService = new CurveBoxService();
 
-            // 2. 注册消息：当任何一个 StationVM 发送 "SaveAllUniboxesMessage" 时，
-            //    调用 OnSaveAllUniboxes 方法
+            // 2. 加载数据 (此时 _curveBoxService.EvalWindows 被填充)
+            _curveBoxService.LoadConfig();
+
+            // 3. 初始化 ProductionVM，并将 service 传递给它
+            ProductionVM = new ProductionViewModel(_curveBoxService);
+
+            // 4. 注册保存消息监听
             WeakReferenceMessenger.Default.Register<SaveAllUniboxesMessage>(this, (r, m) =>
             {
-                OnSaveAllUniboxes();
+                foreach (var station in ProductionVM.Stations)
+                {
+                    station.SyncDataToService();
+                }
+
+                _curveBoxService.SaveConfig();
             });
 
-            // 3. 初始化服务
-            _dataCollectService = new DataCollectService();
             // (修改) 实例化新的服务
             _plcService = new PlcCommunicationService("127.0.0.1");
 
-            // 4. 订阅数据采集完成事件
+            // 5. 初始化其他服务
+            _dataCollectService = new DataCollectService(_curveBoxService.StationSettings);
+            // 6. 订阅数据采集完成事件
             _dataCollectService.OnDataCollect += OnDataCollectHandler;
-            Start();
+            StartPLCListen();
         }
 
        
@@ -73,14 +89,14 @@ namespace ServoPress.ViewModels
         /// <summary>
         /// 启动服务
         /// </summary>
-        public void Start()
+        public void StartPLCListen()
         {
             Task.Run(() => PollingLoop(_cts.Token));
         }
 
 
         /// <summary>
-        /// 后台轮询循环
+        /// PLC后台监听轮询循环
         /// </summary>
         private async Task PollingLoop(CancellationToken token)
         {
@@ -100,7 +116,7 @@ namespace ServoPress.ViewModels
                         {
                             Debug.WriteLine($"[PLC Polling] 读取 {address} 失败: {readResult.Message}");
                             await Task.Delay(5000, token); // 发生错误时，等待5秒
-                            break; // 退出 for 循环，重新开始外层 while 循环 (会触发重连)
+                            break; // 退出 for 循环(会触发重连)
                         }
 
                         if (readResult.Content == true)
@@ -142,35 +158,6 @@ namespace ServoPress.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"[MainWindowViewModel] 更新 UI 失败: {ex.Message}");
-            }
-        }
-        /// <summary>
-        /// 执行保存的业务逻辑
-        /// </summary>
-        private void OnSaveAllUniboxes()
-        {
-            // 1. 从 ProductionVM 中收集所有4个工位的 Unibox 设置
-            var allSettings = ProductionVM.Stations.Select(s => s.UniboxSettings).ToList();
-
-            // 2. 创建要序列化的配置对象
-            var config = new ProgramConfig
-            {
-                UniboxSettings = allSettings
-            };
-
-            string configDir = Path.Combine(AppContext.BaseDirectory, "Product");
-            string configPath = Path.Combine(configDir, $"{CurrentProgram}.json");
-
-            try
-            {
-                Directory.CreateDirectory(configDir);
-                string json = JsonSerializer.Serialize(config, ConfigJsonContext.Default.ProgramConfig);
-                File.WriteAllText(configPath, json);
-                MessageBox.Show($"程序 {CurrentProgram} 的 Unibox 设置已保存到:\n{configPath}", "保存成功", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"保存失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -221,9 +208,8 @@ namespace ServoPress.ViewModels
         /// <summary>
         /// 包含所有工位的 Unibox 设置
         /// </summary>
-        public List<EvalWindow> UniboxSettings { get; set; }
+        public Dictionary<string, List<EvalWindow>> StationSettingsDict { get; set; }
 
-        // 未来可以在此添加其他需要保存的程序特定设置
     }
 
 
