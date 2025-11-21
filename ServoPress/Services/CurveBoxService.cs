@@ -1,4 +1,5 @@
-﻿using ServoPress.Models;
+﻿using OxyPlot;
+using ServoPress.Models;
 using ServoPress.ViewModels;
 using System.Drawing;
 using System.IO;
@@ -182,7 +183,7 @@ namespace ServoPress.Services
         /// <param name="curve">代表曲线的点列表。例如 P1, P2, P3...</param>
         /// <param name="box">目标矩形框 (UniBox)</param>
         /// <returns>一个包含所有相交事件的列表</returns>
-        public List<IntersectionEvent> AnalyzeCurve(List<System.Windows.Point> wpfBoxCorners, double x, double y, double width, double height)
+        public List<IntersectionEvent> AnalyzeCurve(List<DataPoint> wpfBoxCorners, double x, double y, double width, double height)
         {
             // 1. 将 WPF Box 角点转换为 PointF 数组
             List<PointF> curve = wpfBoxCorners.Select(p => new PointF((float)p.X, (float)p.Y)).ToList();
@@ -354,5 +355,7 @@ namespace ServoPress.Services
         {
             return (p2.X - p1.X) * (p2.X - p1.X) + (p2.Y - p1.Y) * (p2.Y - p1.Y);
         }
+
+
     }
 }

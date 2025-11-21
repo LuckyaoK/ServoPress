@@ -16,12 +16,6 @@ namespace ServoPress.Services
         /// 触发的工位 ID (1-4)
         /// </summary>
         public int StationId { get; set; }
-
-        /// <summary>
-        /// 最终判定结果 (OK, NG, WAIT)
-        /// </summary>
-        public string Result { get; set; }
-
         /// <summary>
         /// 采集到的曲线数据 (位移 vs 压力)
         /// </summary>
@@ -34,11 +28,12 @@ namespace ServoPress.Services
         public double EndPosition { get; set; }
         public double StartForce { get; set; }
         public double MaxForce { get; set; }
-
         /// <summary>
-        /// 统计
+        /// 最终判定结果 (OK, NG, WAIT)
         /// </summary>
-        public bool IsOk { get; set; }
+        public bool Result { get; set; }
+        public string ResultText { get; set; }
+
     }
 
     /// <summary>
@@ -55,15 +50,6 @@ namespace ServoPress.Services
         private bool _isBusy = false; // 确保同一时间只采一个
 
 
-        private readonly Dictionary<int, List<EvalWindow>> _stationSettings ;
-
-       
-        public DataCollectService(Dictionary<int, List<EvalWindow>> stationSettings)
-        {
-            _stationSettings = stationSettings;
-        }
-
-
         /// <summary>
         /// 外部 (PlcService) 调用此方法来启动一次采集
         /// </summary>
@@ -75,11 +61,8 @@ namespace ServoPress.Services
 
             try
             {
-                // 1. 在后台线程上运行模拟采集
                 var result = await Task.Run(() => CollectFromControlCard(stationId));
-
-                // 2. 采集完成，触发事件
-                //    (注意: 此时我们在后台线程)
+        
                 OnDataCollect?.Invoke(result);
             }
             catch (Exception ex)
@@ -115,25 +98,14 @@ namespace ServoPress.Services
                 curve.Add(new DataPoint(pos, force));
             }
 
-            // 根据配置设置进行判定
-            for(int i = 0; i < _stationSettings[stationId].Count;i++)
-            {
-                var value = _stationSettings[stationId][i].EndY;
-                if (force> value)
-                {
-
-                }
-            }
-           
-            bool isOk = r.NextDouble() > 0.2; // 80% 概率 OK
             double maxForce = curve.Max(p => p.Y);
 
-            // 5. 将所有数据打包成结果对象
+
+
+            //初始化结果对象
             return new DataResult
             {
                 StationId = stationId,
-                Result = isOk ? "OK" : "NG",
-                IsOk = isOk,
                 CurveData = curve,
                 StartPosition = 0.0,
                 EndPosition = 10.0,

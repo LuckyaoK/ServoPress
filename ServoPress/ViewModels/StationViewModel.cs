@@ -55,7 +55,10 @@ namespace ServoPress.ViewModels
         [ObservableProperty]
         public ObservableCollection<EvalWindow> evalWindows;
 
-        public List<Unibox> uniboxes { get; }=new List<Unibox>();
+        /// <summary>
+        /// 矩形框和箭头集合
+        /// </summary>
+        public List<Unibox> Uniboxes { get; }=new List<Unibox>();
         // 统计
         [ObservableProperty]
         private int _okCount;
@@ -133,7 +136,8 @@ namespace ServoPress.ViewModels
                 new ProcessValue { Name = "起始位移", Value = "0.0", Unit = "mm" },
                 new ProcessValue { Name = "最终位移", Value = "0.0", Unit = "mm" },
                 new ProcessValue { Name = "起始压力", Value = "0.0", Unit = "N" },
-                new ProcessValue { Name = "最终压力", Value = "0.0", Unit = "N" }
+                new ProcessValue { Name = "最终压力", Value = "0.0", Unit = "N" },
+                new ProcessValue { Name = "结果详情", Value = "", Unit = "" }
             };
 
             // 初始化 UniboxSettings
@@ -193,13 +197,13 @@ namespace ServoPress.ViewModels
         }
 
         /// <summary>
-        /// 更新图表
+        /// 更新判定过程值图表
         /// </summary>
         /// <param name="data"></param>
         public void UpdateWithNewData(DataResult data)
         {
             // 1. 更新判定结果
-            Result = data.Result; // OnResultChanged 会自动更新背景色
+            Result = data.Result ? "OK" : "NG"; 
 
             // 2. 更新曲线
             _curveSeries.Points.Clear();
@@ -210,9 +214,10 @@ namespace ServoPress.ViewModels
             ProcessValues[1].Value = data.EndPosition.ToString("F2");
             ProcessValues[2].Value = data.StartForce.ToString("F2");
             ProcessValues[3].Value = data.MaxForce.ToString("F2");
+            ProcessValues[4].Value = data.ResultText;
 
             // 4. 更新统计
-            if (data.IsOk)
+            if (data.Result)
             {
                 OkCount++;
             }
@@ -253,11 +258,9 @@ namespace ServoPress.ViewModels
             // 2. 数据存储
             EvalWindows.Add(evalWindow);
 
-            // 3. 更新图表 (创建注解)
+            // 3. 添加矩形框和箭头
             AddAnnotationToPlot(evalWindow);
 
-          
-  
             // 4. 刷新图表
             PlotModel.InvalidatePlot(true);
         }
@@ -279,7 +282,7 @@ namespace ServoPress.ViewModels
                 Stroke = OxyColors.Green,
                 StrokeThickness = 1,
                 Text = window.Name,
-                TextPosition = new DataPoint((window.StartX + window.EndX) / 2, window.EndY)
+                TextPosition = new DataPoint((window.StartX + window.EndX) / 2, window.EndY+ Math.Abs(window.StartY - window.EndY) * 0.15)
             };
             PlotModel.Annotations.Add(rect);
 
@@ -324,7 +327,8 @@ namespace ServoPress.ViewModels
                 triangleAnnotation2 = CreatePoly(false, outBoxSide, triangleAnnotation2, window.StartX, window.EndX, window.StartY, window.EndY);
                 PlotModel.Annotations.Add(triangleAnnotation2);
             }
-            uniboxes.Add(new Unibox
+
+            Uniboxes.Add(new Unibox
             {
                 RectangleAnnotation = rect,
                 InSideAnnotation = triangleAnnotation1,
@@ -567,10 +571,10 @@ namespace ServoPress.ViewModels
         {
             try
             {
-                int count = uniboxes.Count;
-                var values = PlotModel.Annotations.Where(p => p == uniboxes[count - 1].RectangleAnnotation
-                || p == uniboxes[count - 1].InSideAnnotation
-                || p == uniboxes[count - 1].OutSideAnnotation).
+                int count = Uniboxes.Count;
+                var values = PlotModel.Annotations.Where(p => p == Uniboxes[count - 1].RectangleAnnotation
+                || p == Uniboxes[count - 1].InSideAnnotation
+                || p == Uniboxes[count - 1].OutSideAnnotation).
                 ToList();
 
                 foreach (var item in values)
@@ -579,7 +583,7 @@ namespace ServoPress.ViewModels
                 }
 
                 EvalWindows.RemoveAt(EvalWindows.Count - 1);
-                uniboxes.RemoveAt(uniboxes.Count - 1);
+                Uniboxes.RemoveAt(Uniboxes.Count - 1);
                 // 刷新图表
                 PlotModel.InvalidatePlot(true);
             }

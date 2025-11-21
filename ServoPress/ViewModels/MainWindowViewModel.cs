@@ -7,14 +7,14 @@ using ServoPress.Services;
 using System.Collections.Generic; 
 using System.Diagnostics;
 using System.IO;
-using System.Linq; 
+using System.Linq;
+using System.Text;
 using System.Text.Json; 
 using System.Text.Json.Serialization; 
 using System.Windows;
 
 namespace ServoPress.ViewModels
 {
-
 
     public partial class MainWindowViewModel : ObservableObject
     {
@@ -78,13 +78,12 @@ namespace ServoPress.ViewModels
             _plcService = new PlcCommunicationService("127.0.0.1");
 
             // 5. 初始化其他服务
-            _dataCollectService = new DataCollectService(_curveBoxService.StationSettings);
+            _dataCollectService = new DataCollectService();
             // 6. 订阅数据采集完成事件
             _dataCollectService.OnDataCollect += OnDataCollectHandler;
             StartPLCListen();
         }
 
-       
 
         /// <summary>
         /// 启动服务
@@ -111,7 +110,6 @@ namespace ServoPress.ViewModels
 
                         // 1. 使用新的服务读取 bool 值
                         var readResult =  _plcService.ReadBool(address);
-
                         if (!readResult.IsSuccess)
                         {
                             Debug.WriteLine($"[PLC Polling] 读取 {address} 失败: {readResult.Message}");
@@ -145,14 +143,143 @@ namespace ServoPress.ViewModels
             Debug.WriteLine("[PlcService] 轮询已停止。");
         }
 
-
+        /// <summary>
+        /// 结果处理和判定
+        /// </summary>
+        /// <param name="result"></param>
         private void OnDataCollectHandler(DataResult result)
         {
             try
             {
-
                 var stationVM = ProductionVM.Stations.FirstOrDefault(s => s.Id == result.StationId);
                 if (stationVM == null) return;
+
+                // 判定结果逻辑根据某个工站的所有评估窗口进行判定
+                var windows = _curveBoxService.StationSettings[result.StationId];
+                StringBuilder sb = new StringBuilder();
+                foreach (var box in windows)
+                {
+                    double width = Math.Abs(box.EndX - box.StartX);
+                    double height = Math.Abs(box.EndY - box.StartY);
+
+                    var events = _curveBoxService.AnalyzeCurve(result.CurveData, box.StartX, box.StartY, width, height);
+                    if (events.Count > 0)
+                    {
+                        Debug.WriteLine($"=>\n曲线进入方向{events[0].Side}{events[0].Point}\n");
+                        Debug.WriteLine($"=>\n曲线退出方向{events[events.Count - 1].Side}{events[events.Count - 1].Point}\n");
+
+                        BoxSide inBoxSide = new BoxSide();
+                        switch (box.EntryDirection)
+                        {
+                            case "上进":
+                                inBoxSide = BoxSide.Top; break;
+                            case "下进":
+                                inBoxSide = BoxSide.Bottom; break;
+                            case "左进":
+                                inBoxSide = BoxSide.Left; break;
+                            case "右进":
+                                inBoxSide = BoxSide.Right; break;
+                        }
+
+                        BoxSide outBoxSide = new BoxSide();
+                        switch (box.ExitDirection)
+                        {
+                            case "上出":
+                                outBoxSide = BoxSide.Top; break;
+                            case "下出":
+                                outBoxSide = BoxSide.Bottom; break;
+                            case "左出":
+                                outBoxSide = BoxSide.Left; break;
+                            case "右出":
+                                outBoxSide = BoxSide.Right; break;
+                            case "不出":
+                                outBoxSide = BoxSide.None; break;
+                        }
+
+                        bool InResult = true, OutResult = true;
+                        // 1、曲线进出入方向和Unibox设置方向要一致
+                        if (inBoxSide != events[0].Side)
+                        {
+                            InResult = false;
+                        }
+                        if (outBoxSide != events[events.Count - 1].Side)
+                        {
+                            OutResult = false;
+                        }
+
+
+                        bool InRepeat = false,OutRepeat = false,Touch=false;
+                        for (int j = 1; j < events.Count - 1; j++)
+                        {
+                            // 2、不能触碰没有设置的边界
+                            if (events[j].Side != inBoxSide && events[j].Side != outBoxSide)
+                            {
+                                Touch = true;
+                            }
+
+                            // 3、进入方向重复
+                            if (events[j].Side == inBoxSide)
+                            {
+                                InRepeat = true;
+                            }
+
+                            // 4、退出方向重复
+                            if (events[j].Side == outBoxSide)
+                            {
+                                OutRepeat = true;
+                            }
+
+                        }
+
+                        //允许重进入
+                        if (box.AllowReentry)
+                        {
+                            if (InResult)
+                            {
+                                sb.Append("进入方向判定OK\n");
+                            }
+                            else
+                            {
+                                sb.Append("进入方向判定NG\n");
+                            }
+                        }
+
+                        else
+                        {
+                            if (InResult && !InRepeat)
+                            {
+                                sb.Append("进入方向判定OK\n");
+                            }
+                            else if (InResult && InRepeat)
+                            {
+                                sb.Append("重复进入,进入方向判定NG\n");
+                            }
+                            else
+                            {
+                                sb.Append("进入方向判定NG\n");
+                            }
+                        }
+
+
+                        if (OutResult && !OutRepeat)
+                        {
+                            sb.Append("退出方向判定OK");
+                        }
+                        else if (OutResult && OutRepeat)
+                        {
+                            sb.Append("重复退出,退出方向判定NG");
+                        }
+                        else
+                        {
+                            sb.Append("退出方向判定NG");
+                        }
+                    }
+                }
+
+                result.ResultText = sb.ToString();
+                if (!result.ResultText.Contains("NG"))
+                    result.Result = true;
+
                 stationVM.UpdateWithNewData(result);
             }
             catch (Exception ex)
