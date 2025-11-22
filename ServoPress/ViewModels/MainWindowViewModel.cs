@@ -30,34 +30,31 @@ namespace ServoPress.ViewModels
         [ObservableProperty]
         private bool _isCloseRequested;
 
-      
-        [ObservableProperty]
-        private string _currentProgram = "MP101_PartA";
-
         // 公开 StationViewModel 供 View 绑定
         [ObservableProperty]
         private StationViewModel _stationVM;
+        public ProductionViewModel ProductionVM { get; }
 
         // 触发地址
         private readonly string[] _triggerAddresses = { "DB10.15.0", "DB10.16.0", "DB10.17.0", "DB10.18.0", };
 
-        public ProductionViewModel ProductionVM { get; }
-
-
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
         private DataCollectService _dataCollectService;
         private PlcCommunicationService _plcService;
-
-
         private readonly CurveBoxService _curveBoxService;
-
+        private readonly DataStorageService _storageService;
 
         public MainWindowViewModel()
         {
             // 1. 初始化基础服务
             _curveBoxService = new CurveBoxService();
+            _plcService = new PlcCommunicationService("127.0.0.1");
+            _dataCollectService = new DataCollectService();
+            _storageService = new DataStorageService();
+            _storageService.InitializeDatabase();
 
-            // 2. 加载数据 (此时 _curveBoxService.EvalWindows 被填充)
+            // 2. 加载评估窗口配置文件
             _curveBoxService.LoadConfig();
 
             // 3. 初始化 ProductionVM，并将 service 传递给它
@@ -74,20 +71,15 @@ namespace ServoPress.ViewModels
                 _curveBoxService.SaveConfig();
             });
 
-            // (修改) 实例化新的服务
-            _plcService = new PlcCommunicationService("127.0.0.1");
 
-            // 5. 初始化其他服务
-            _dataCollectService = new DataCollectService();
-            // 6. 订阅数据采集完成事件
+            //5. 订阅数据采集完成事件
             _dataCollectService.OnDataCollect += OnDataCollectHandler;
+
+            //6. 开启后台监听线程
             StartPLCListen();
         }
 
 
-        /// <summary>
-        /// 启动服务
-        /// </summary>
         public void StartPLCListen()
         {
             Task.Run(() => PollingLoop(_cts.Token));
@@ -125,7 +117,7 @@ namespace ServoPress.ViewModels
                         }
 
                         //重置
-                        var writeResult = _plcService.WriteBool(address, false);
+                        //var writeResult = _plcService.WriteBool(address, false);
 
                     }
 
@@ -154,133 +146,42 @@ namespace ServoPress.ViewModels
                 var stationVM = ProductionVM.Stations.FirstOrDefault(s => s.Id == result.StationId);
                 if (stationVM == null) return;
 
-                // 判定结果逻辑根据某个工站的所有评估窗口进行判定
-                var windows = _curveBoxService.StationSettings[result.StationId];
+                // 获取配置
+                var windows = _curveBoxService.GetSettingsForStation(result.StationId);
                 StringBuilder sb = new StringBuilder();
+                bool isAllPassed = true;
+
                 foreach (var box in windows)
                 {
                     double width = Math.Abs(box.EndX - box.StartX);
                     double height = Math.Abs(box.EndY - box.StartY);
 
+                    // 1. 分析几何关系
                     var events = _curveBoxService.AnalyzeCurve(result.CurveData, box.StartX, box.StartY, width, height);
-                    if (events.Count > 0)
-                    {
-                        Debug.WriteLine($"=>\n曲线进入方向{events[0].Side}{events[0].Point}\n");
-                        Debug.WriteLine($"=>\n曲线退出方向{events[events.Count - 1].Side}{events[events.Count - 1].Point}\n");
 
-                        BoxSide inBoxSide = new BoxSide();
-                        switch (box.EntryDirection)
-                        {
-                            case "上进":
-                                inBoxSide = BoxSide.Top; break;
-                            case "下进":
-                                inBoxSide = BoxSide.Bottom; break;
-                            case "左进":
-                                inBoxSide = BoxSide.Left; break;
-                            case "右进":
-                                inBoxSide = BoxSide.Right; break;
-                        }
+                    // 2. 判定验证
+                    var (boxPassed, boxMessage) = _curveBoxService.VerifyBoxResult(box, events);
 
-                        BoxSide outBoxSide = new BoxSide();
-                        switch (box.ExitDirection)
-                        {
-                            case "上出":
-                                outBoxSide = BoxSide.Top; break;
-                            case "下出":
-                                outBoxSide = BoxSide.Bottom; break;
-                            case "左出":
-                                outBoxSide = BoxSide.Left; break;
-                            case "右出":
-                                outBoxSide = BoxSide.Right; break;
-                            case "不出":
-                                outBoxSide = BoxSide.None; break;
-                        }
+                    if (!boxPassed) isAllPassed = false;
 
-                        bool InResult = true, OutResult = true;
-                        // 1、曲线进出入方向和Unibox设置方向要一致
-                        if (inBoxSide != events[0].Side)
-                        {
-                            InResult = false;
-                        }
-                        if (outBoxSide != events[events.Count - 1].Side)
-                        {
-                            OutResult = false;
-                        }
-
-
-                        bool InRepeat = false,OutRepeat = false,Touch=false;
-                        for (int j = 1; j < events.Count - 1; j++)
-                        {
-                            // 2、不能触碰没有设置的边界
-                            if (events[j].Side != inBoxSide && events[j].Side != outBoxSide)
-                            {
-                                Touch = true;
-                            }
-
-                            // 3、进入方向重复
-                            if (events[j].Side == inBoxSide)
-                            {
-                                InRepeat = true;
-                            }
-
-                            // 4、退出方向重复
-                            if (events[j].Side == outBoxSide)
-                            {
-                                OutRepeat = true;
-                            }
-
-                        }
-
-                        //允许重进入
-                        if (box.AllowReentry)
-                        {
-                            if (InResult)
-                            {
-                                sb.Append("进入方向判定OK\n");
-                            }
-                            else
-                            {
-                                sb.Append("进入方向判定NG\n");
-                            }
-                        }
-
-                        else
-                        {
-                            if (InResult && !InRepeat)
-                            {
-                                sb.Append("进入方向判定OK\n");
-                            }
-                            else if (InResult && InRepeat)
-                            {
-                                sb.Append("重复进入,进入方向判定NG\n");
-                            }
-                            else
-                            {
-                                sb.Append("进入方向判定NG\n");
-                            }
-                        }
-
-
-                        if (OutResult && !OutRepeat)
-                        {
-                            sb.Append("退出方向判定OK");
-                        }
-                        else if (OutResult && OutRepeat)
-                        {
-                            sb.Append("重复退出,退出方向判定NG");
-                        }
-                        else
-                        {
-                            sb.Append("退出方向判定NG");
-                        }
-                    }
+                    sb.AppendLine($"[{box.Name}]: {boxMessage}");
                 }
 
-                result.ResultText = sb.ToString();
-                if (!result.ResultText.Contains("NG"))
-                    result.Result = true;
+                result.ResultText = sb.ToString().TrimEnd();
+                result.Result = isAllPassed;
 
                 stationVM.UpdateWithNewData(result);
+                Task.Run(() =>
+                {
+                    try
+                    {
+                         _storageService.SaveResultAsync(result);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[DB Error] {ex.Message}");
+                    }
+                });
             }
             catch (Exception ex)
             {

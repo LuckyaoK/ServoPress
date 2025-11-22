@@ -49,7 +49,7 @@ namespace ServoPress.ViewModels
         private EvalWindow _uniboxSettings;
 
         // 1. 添加方向选项集合 (供 View 中的 ComboBox 绑定)
-        public ObservableCollection<string> EntryDirectionsOptions{ get; }= new ObservableCollection<string> { "上进", "下进", "左进", "右进" };
+        public ObservableCollection<string> EntryDirectionsOptions{ get; }= new ObservableCollection<string> { "上进", "下进", "左进", "右进", "不进"};
         public ObservableCollection<string> ExitDirectionsOptions { get; } = new ObservableCollection<string> { "上出", "下出", "左出", "右出", "不出" };
         
         [ObservableProperty]
@@ -133,9 +133,11 @@ namespace ServoPress.ViewModels
             // 初始化示例数据
             ProcessValues = new ObservableCollection<ProcessValue>
             {
-                new ProcessValue { Name = "起始位移", Value = "0.0", Unit = "mm" },
+                new ProcessValue { Name = "最小位移", Value = "0.0", Unit = "mm" },
+                new ProcessValue { Name = "最大位移", Value = "0.0", Unit = "mm" },
                 new ProcessValue { Name = "最终位移", Value = "0.0", Unit = "mm" },
-                new ProcessValue { Name = "起始压力", Value = "0.0", Unit = "N" },
+                new ProcessValue { Name = "最小压力", Value = "0.0", Unit = "N" },
+                new ProcessValue { Name = "最大压力", Value = "0.0", Unit = "N" },
                 new ProcessValue { Name = "最终压力", Value = "0.0", Unit = "N" },
                 new ProcessValue { Name = "结果详情", Value = "", Unit = "" }
             };
@@ -210,11 +212,13 @@ namespace ServoPress.ViewModels
             _curveSeries.Points.AddRange(data.CurveData);
             PlotModel.InvalidatePlot(true); // 刷新图表
             // 3. 更新过程值
-            ProcessValues[0].Value = data.StartPosition.ToString("F2");
-            ProcessValues[1].Value = data.EndPosition.ToString("F2");
-            ProcessValues[2].Value = data.StartForce.ToString("F2");
-            ProcessValues[3].Value = data.MaxForce.ToString("F2");
-            ProcessValues[4].Value = data.ResultText;
+            ProcessValues[0].Value = data.MinPosition.ToString("F2");
+            ProcessValues[1].Value = data.MaxPosition.ToString("F2");
+            ProcessValues[2].Value = data.EndPosition.ToString("F2");
+            ProcessValues[3].Value = data.MinForce.ToString("F2");
+            ProcessValues[4].Value = data.MaxForce.ToString("F2");
+            ProcessValues[5].Value = data.EndForce.ToString("F2");
+            ProcessValues[6].Value = data.ResultText;
 
             // 4. 更新统计
             if (data.Result)
@@ -297,6 +301,8 @@ namespace ServoPress.ViewModels
                     inBoxSide = BoxSide.Left; break;
                 case "右进":
                     inBoxSide = BoxSide.Right; break;
+                case "不进":
+                    inBoxSide = BoxSide.None; break;
             }
 
             BoxSide outBoxSide = new BoxSide();
@@ -316,9 +322,11 @@ namespace ServoPress.ViewModels
 
             PolygonAnnotation triangleAnnotation1 = new PolygonAnnotation();
             //进入
-            triangleAnnotation1 = CreatePoly(true, inBoxSide, triangleAnnotation1, window.StartX, window.EndX, window.StartY, window.EndY);
-            PlotModel.Annotations.Add(triangleAnnotation1);
-
+            if(inBoxSide !=BoxSide.None)
+            {
+                triangleAnnotation1 = CreatePoly(true, inBoxSide, triangleAnnotation1, window.StartX, window.EndX, window.StartY, window.EndY);
+                PlotModel.Annotations.Add(triangleAnnotation1);
+            }
 
             PolygonAnnotation triangleAnnotation2 = new PolygonAnnotation();
             //退出
@@ -462,11 +470,11 @@ namespace ServoPress.ViewModels
             double cy = (startY + endY) / 2;
 
             // 定义等边三角形的比例因子：底边宽度 = 高度 * (2 / sqrt(3)) ≈ 1.155
-            // 但因为XY轴比例不同，我们这里用 lenX 和 lenY 分别作为基准
+            // 但因为XY轴比例不同，这里用 lenX 和 lenY 分别作为基准
 
             bool isGenerated = false;
 
-            // 处理 EntryDirection
+            // 处理 进入箭头
             if (IsEnter)
             {
                 switch (boxSide)

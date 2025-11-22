@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace ServoPress.Services
 {
     /// <summary>
-    /// 通用的 PLC 通信服务 (单例)
+    ///  PLC通信服务类
     /// </summary>
     public class PlcCommunicationService : IDisposable
     {

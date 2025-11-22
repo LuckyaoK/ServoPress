@@ -56,9 +56,9 @@
                     <!-- 示例数据 -->
                     <DataGrid.ItemsSource>
                         <x:Array Type="{x:Type local:HistoryItem}">
-                            <local:HistoryItem Timestamp="2025/11/06 10:30:15" Program="MP101" Result="OK" MaxForce="450.2"/>
-                            <local:HistoryItem Timestamp="2025/11/06 10:30:18" Program="MP101" Result="OK" MaxForce="451.1"/>
-                            <local:HistoryItem Timestamp="2025/11/06 10:30:21" Program="MP101" Result="NOK" MaxForce="320.0"/>
+                            <local:HistoryItem Timestamp="2025/11/06 10:30:15" Program="Y01" Result="OK" MaxForce="450.2"/>
+                            <local:HistoryItem Timestamp="2025/11/06 10:30:18" Program="Y02" Result="OK" MaxForce="451.1"/>
+                            <local:HistoryItem Timestamp="2025/11/06 10:30:21" Program="Y03" Result="NOK" MaxForce="320.0"/>
                         </x:Array>
                     </DataGrid.ItemsSource>
                 </DataGrid>

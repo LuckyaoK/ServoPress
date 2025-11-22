@@ -1,6 +1,7 @@
 ﻿using OxyPlot;
 using ServoPress.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 namespace ServoPress.Services
 {
     /// <summary>
-    /// 定义从控制卡采集到的完整数据包
+    /// 数据采集服务类
     /// </summary>
     public class DataResult
     {
@@ -24,10 +25,14 @@ namespace ServoPress.Services
         /// <summary>
         /// 过程值
         /// </summary>
-        public double StartPosition { get; set; }
-        public double EndPosition { get; set; }
-        public double StartForce { get; set; }
+        public double MinPosition { get; set; }
+        public double MaxPosition { get; set; }
+        public double MinForce { get; set; }
         public double MaxForce { get; set; }
+        public double EndPosition { get; set; }
+        public double EndForce { get; set; }
+
+
         /// <summary>
         /// 最终判定结果 (OK, NG, WAIT)
         /// </summary>
@@ -47,22 +52,24 @@ namespace ServoPress.Services
         /// </summary>
         public event Action<DataResult> OnDataCollect;
 
-        private bool _isBusy = false; // 确保同一时间只采一个
-
-
+        private readonly ConcurrentDictionary<int, byte> _busyStations = new ConcurrentDictionary<int, byte>();
         /// <summary>
         /// 外部 (PlcService) 调用此方法来启动一次采集
         /// </summary>
         public async Task TriggerCollectAsync(int stationId)
         {
-            if (_isBusy ) return; // 如果正在采集，则忽略新的触发信号
-            _isBusy = true;
+            // 尝试将该工位标记为忙碌
+            // TryAdd 是原子操作：如果添加成功返回 true（抢到锁了）；如果已存在返回 false（正在忙）
+            if (!_busyStations.TryAdd(stationId, 0))
+            {
+                Debug.WriteLine($"[DataAcquisition] 工位 {stationId} 正在采集中，忽略本次触发。");
+                return;
+            }
             Debug.WriteLine($"[DataAcquisitionService] 工位 {stationId} 开始采集...");
 
             try
             {
                 var result = await Task.Run(() => CollectFromControlCard(stationId));
-        
                 OnDataCollect?.Invoke(result);
             }
             catch (Exception ex)
@@ -71,16 +78,19 @@ namespace ServoPress.Services
             }
             finally
             {
-                _isBusy = false;
+                // 采集完成，移除该工位的忙碌状态，释放锁
+                _busyStations.TryRemove(stationId, out _);
+                // 延时等待PLC信号复位，防止重复触发
+                Thread.Sleep(1000);
             }
         }
 
         /// <summary>
-        /// [模拟] 真正与控制卡通信的逻辑
+        /// 控制卡通信采集逻辑
         /// </summary>
         private DataResult CollectFromControlCard(int stationId)
         {
-            // TODO: 在这里替换为您的真实网口通信代码
+            // TODO:真实网口通信代码
             // 1. (连接到控制卡 Socket)
             // 2. (发送开始采集命令)
             // 3. (循环接收数据... 假设收到了两组数据：位移和压力)
@@ -99,18 +109,21 @@ namespace ServoPress.Services
             }
 
             double maxForce = curve.Max(p => p.Y);
+            double EndForce = curve.LastOrDefault().Y;
 
-
+            double EndPos = curve.LastOrDefault().X;
 
             //初始化结果对象
             return new DataResult
             {
                 StationId = stationId,
                 CurveData = curve,
-                StartPosition = 0.0,
-                EndPosition = 10.0,
-                StartForce = 0.0,
-                MaxForce = maxForce
+                MinPosition = 0.0,
+                MaxPosition = 10.0,
+                EndPosition = EndPos,
+                MinForce = 0.0,
+                MaxForce = maxForce,
+                EndForce = EndForce
             };
         }
     }

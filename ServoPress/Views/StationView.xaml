@@ -51,15 +51,15 @@
 
                         <DataGrid ItemsSource="{Binding ProcessValues}" 
                                   AutoGenerateColumns="False" 
-                                  CanUserAddRows="False">
+                                  Grid.Column="0">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
-                                <DataGridTextColumn Header="值" Binding="{Binding Value}" Width="*"/>
+                                <DataGridTextColumn Header="值" Binding="{Binding Value}" Width="3*"/>
                                 <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="*"/>
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <!-- 最终判定结果 (已修改) -->
+                        <!-- 最终判定结果 -->
                         <StackPanel Grid.Column="1" 
                                     Margin="10,0,0,0" 
                                     VerticalAlignment="Center" 

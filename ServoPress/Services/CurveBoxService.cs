@@ -3,6 +3,7 @@ using ServoPress.Models;
 using ServoPress.ViewModels;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Windows;
 
@@ -53,28 +54,10 @@ namespace ServoPress.Services
             SegmentIndex = segmentIndex;
         }
 
-        public override string ToString()
-        {
-            string line = "";
-            //string eventType = IsEntering ? "进入" : "退出";
-            switch (Side)
-            {
-
-                case BoxSide.Top:
-                    line = "上"; break;
-                case BoxSide.Bottom:
-                    line = "下"; break;
-                case BoxSide.Left:
-                    line = "左"; break;
-                case BoxSide.Right:
-                    line = "右"; break;
-            }
-            return $"[相交点{Point} 相交于(:{line})判定OK";
-        }
     }
 
     /// <summary>
-    /// 用于分析曲线与Box的相交情况
+    /// 评估窗口服务类
     /// </summary>
     public class CurveBoxService
     {
@@ -243,6 +226,7 @@ namespace ServoPress.Services
                         events.Add(new IntersectionEvent(entry.point, entry.side, true, i));
                         events.Add(new IntersectionEvent(exit.point, exit.side, false, i));
                     }
+
                     //(hits.Count == 1 是线段刚好"擦"到边或角，可以根据需要处理)
                 }
                 // 4. 一直在内部 (wasInside && isInside)
@@ -355,6 +339,112 @@ namespace ServoPress.Services
         {
             return (p2.X - p1.X) * (p2.X - p1.X) + (p2.Y - p1.Y) * (p2.Y - p1.Y);
         }
+
+
+        /// <summary>
+        /// 验证单个 Box 的判定逻辑
+        /// 将原本 ViewModel 中的业务逻辑下沉到 Service
+        /// </summary>
+        /// <returns>Item1: 是否通过(bool), Item2: 结果描述(string)</returns>
+        public (bool IsOk, string Message) VerifyBoxResult(EvalWindow box, List<IntersectionEvent> events)
+        {
+            // 获取期望的进出方向枚举
+            BoxSide expectedInSide = MapDirectionToSide(box.EntryDirection);
+            BoxSide expectedOutSide = MapDirectionToSide(box.ExitDirection);
+
+            // 如果没有发生任何交互
+            if (events == null || events.Count == 0)
+            {
+                if (expectedInSide==BoxSide.None && expectedOutSide == BoxSide.None)
+                    return (true, "未检测到曲线进入");
+                else
+                    return (false, "未检测到曲线进入");
+            }
+
+            // 获取实际的进出事件
+            var firstEvent = events[0];
+            var lastEvent = events[events.Count - 1];
+
+            // --- 判定逻辑 ---
+            bool inResult = (firstEvent.Side == expectedInSide);
+            bool outResult = (lastEvent.Side == expectedOutSide);
+
+            // 如果退出方向为不出 (BoxSide.None)，则默认为 True
+            if (expectedOutSide == BoxSide.None) outResult = true;
+
+            bool inRepeat = false;
+            bool outRepeat = false;
+            bool touchIllegalSide = false;
+
+            // 遍历中间过程 (排除首尾)
+            for (int j = 1; j < events.Count - 1; j++)
+            {
+                var currentSide = events[j].Side;
+
+                // 检查是否触碰了非进出方向的边界
+                if (currentSide != expectedInSide && currentSide != expectedOutSide)
+                {
+                    touchIllegalSide = true;
+                }
+
+                // 检查重复进入
+                if (currentSide == expectedInSide) inRepeat = true;
+
+                // 检查重复退出
+                if (currentSide == expectedOutSide) outRepeat = true;
+            }
+
+       
+           StringBuilder errors = new StringBuilder();
+
+            // 1. 判定进入
+            if (!inResult) errors.AppendLine($"进入方向错误(设置:{box.EntryDirection};实际:{GetSideName(firstEvent.Side)}进)");
+            else if (!box.AllowReentry && inRepeat) errors.AppendLine("重复进入");
+
+            // 2. 判定退出
+            if (!outResult) errors.AppendLine($"退出方向错误(设置:{box.ExitDirection};实际:{GetSideName(lastEvent.Side)}出)");
+            else if (!box.AllowReentry && outRepeat) errors.AppendLine("重复退出");
+
+            // 3. 判定非法触碰
+            if (touchIllegalSide) errors.AppendLine("触碰非法边界");
+
+            // --- 最终结论 ---
+            if (errors.Length==0)
+            {
+                return (true, "OK");
+            }
+            else
+            {
+                return (false, "NG " + string.Join(", ", errors));
+            }
+        }
+
+        #region 辅助方法 (私有)
+
+        private BoxSide MapDirectionToSide(string direction)
+        {
+            return direction switch
+            {
+                "上进" or "上出" => BoxSide.Top,
+                "下进" or "下出" => BoxSide.Bottom,
+                "左进" or "左出" => BoxSide.Left,
+                "右进" or "右出" => BoxSide.Right,
+                 _=> BoxSide.None,
+            };
+        }
+
+        private string GetSideName(BoxSide side)
+        {
+            return side switch
+            {
+                BoxSide.Top => "上",
+                BoxSide.Bottom => "下",
+                BoxSide.Left => "左",
+                BoxSide.Right => "右",
+                _ => "无"
+            };
+        }
+        #endregion
 
 
     }
