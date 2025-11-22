@@ -34,7 +34,7 @@ namespace ServoPress.Models
         public string EntryDirection { get; set; }
         public string ExitDirection { get; set; }
         public bool AllowReentry { get; set; }
-
+        public bool AllowJudege { get; set; }
     }
     public class Unibox
     {
@@ -49,5 +49,15 @@ namespace ServoPress.Models
         /// 退出方向标注箭头
         /// </summary>
         public PolygonAnnotation OutSideAnnotation { get; set; }
+    }
+
+    public class NoPass
+    {
+        public RectangleAnnotation RectangleAnnotation { get; set; }
+
+        /// <summary>
+        /// 直线标注
+        /// </summary>
+        public LineAnnotation LineAnnotation { get; set; }
     }
 }

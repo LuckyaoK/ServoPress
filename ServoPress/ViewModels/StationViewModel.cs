@@ -11,6 +11,7 @@ using ServoPress.Services;
 using System.Collections.ObjectModel; 
 using System.Linq;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace ServoPress.ViewModels
@@ -48,17 +49,27 @@ namespace ServoPress.ViewModels
         [ObservableProperty]
         private EvalWindow _uniboxSettings;
 
+        // 单个NoPass设置
+        [ObservableProperty]
+        private EvalWindow _noPassSettings;
+
+        //所有评估窗口的集合
+        public List<EvalWindow> EvalWindows { get; set; }
+
         // 1. 添加方向选项集合 (供 View 中的 ComboBox 绑定)
         public ObservableCollection<string> EntryDirectionsOptions{ get; }= new ObservableCollection<string> { "上进", "下进", "左进", "右进", "不进"};
         public ObservableCollection<string> ExitDirectionsOptions { get; } = new ObservableCollection<string> { "上出", "下出", "左出", "右出", "不出" };
         
-        [ObservableProperty]
-        public ObservableCollection<EvalWindow> evalWindows;
+       
 
         /// <summary>
-        /// 矩形框和箭头集合
+        /// Unibox矩形框和箭头集合
         /// </summary>
         public List<Unibox> Uniboxes { get; }=new List<Unibox>();
+        /// <summary>
+        /// NoPass直线和标注
+        /// </summary>
+        public List<NoPass> NoPasses { get; } = new List<NoPass>();
         // 统计
         [ObservableProperty]
         private int _okCount;
@@ -116,9 +127,9 @@ namespace ServoPress.ViewModels
             InitializePlot();
 
             // 1. 初始化 EvalWindows 集合 (防止为空)
-            EvalWindows = new ObservableCollection<EvalWindow>();
+            EvalWindows = new List<EvalWindow>();
 
-            // 1. 加载特定工位的配置
+            // 1. 加载特定工位的评估窗口配置
             if (_curveBoxService != null)
             {
                 var mySettings = _curveBoxService.GetSettingsForStation(Id);
@@ -149,6 +160,12 @@ namespace ServoPress.ViewModels
                 EntryDirection = "左进",
                 ExitDirection = "右出",
                 AllowReentry = true
+            };
+
+            // 初始化 NoPassSettings
+            NoPassSettings = new EvalWindow
+            {
+                AllowJudege = true,
             };
         }
 
@@ -234,9 +251,9 @@ namespace ServoPress.ViewModels
         }
 
 
-
+    
         /// <summary>
-        /// 创建评估窗口UniBox
+        /// 创建评估窗口
         /// </summary>
         /// <param name="minX"></param>
         /// <param name="maxX"></param>
@@ -566,16 +583,38 @@ namespace ServoPress.ViewModels
             Yield = 0;
         }
 
-
         [RelayCommand]
-        private void SaveConfig()
+        private void SaveUniBoxConfig()
         {
+            //移除旧Box
+            RemoveUniBox();
+
+            // 重新创建数据模型,防止用户手动填写绘制Box
+            var evalWindow = new EvalWindow
+            {
+                Enabled = true,
+                Name = $"UniBox {EvalWindows.Count + 1}",
+                StartX = UniboxSettings.StartX,
+                EndX = UniboxSettings.EndX,
+                StartY = UniboxSettings.StartY,
+                EndY = UniboxSettings.EndY,
+                EntryDirection = UniboxSettings.EntryDirection,
+                ExitDirection = UniboxSettings.ExitDirection,
+                AllowReentry = UniboxSettings.AllowReentry
+            };
+            //数据存储
+            EvalWindows.Add(evalWindow);
+            //添加矩形框和箭头
+            AddAnnotationToPlot(evalWindow);
+
+            //刷新图表
+            PlotModel.InvalidatePlot(true);
             // 发送保存请求消息
             WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
         }
 
         [RelayCommand]
-        private void RemoveBox()
+        private void RemoveUniBox()
         {
             try
             {
@@ -585,11 +624,12 @@ namespace ServoPress.ViewModels
                 || p == Uniboxes[count - 1].OutSideAnnotation).
                 ToList();
 
+                //移除UI
                 foreach (var item in values)
                 {
                     PlotModel.Annotations.Remove(item);
                 }
-
+                //移除
                 EvalWindows.RemoveAt(EvalWindows.Count - 1);
                 Uniboxes.RemoveAt(Uniboxes.Count - 1);
                 // 刷新图表
@@ -599,6 +639,18 @@ namespace ServoPress.ViewModels
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        [RelayCommand]
+        private void SaveNoPass()
+        {
+
+        }
+
+        [RelayCommand]
+        private void RemoveNoPass()
+        {
+
         }
 
         #endregion
