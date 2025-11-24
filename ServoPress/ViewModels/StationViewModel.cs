@@ -158,13 +158,15 @@ namespace ServoPress.ViewModels
                 Enabled = true,
                 EntryDirection = "左进",
                 ExitDirection = "右出",
-                AllowReentry = true
+                AllowReentry = true,
+                AllowJudge = true
             };
 
             // 初始化 NoPassSettings
             NoPassSettings = new EvalWindow
             {
-                AllowJudege = true,
+                Enabled = true,
+                AllowJudge = true,
             };
         }
 
@@ -272,7 +274,8 @@ namespace ServoPress.ViewModels
                 EndY = maxY,
                 EntryDirection = UniboxSettings.EntryDirection,
                 ExitDirection = UniboxSettings.ExitDirection,
-                AllowReentry= UniboxSettings.AllowReentry
+                AllowReentry= UniboxSettings.AllowReentry,
+                AllowJudge= UniboxSettings.AllowJudge
             };
             UniboxSettings = evalWindow;
             // 2. 数据存储
@@ -608,7 +611,8 @@ namespace ServoPress.ViewModels
                 EndY = UniboxSettings.EndY,
                 EntryDirection = UniboxSettings.EntryDirection,
                 ExitDirection = UniboxSettings.ExitDirection,
-                AllowReentry = UniboxSettings.AllowReentry
+                AllowReentry = UniboxSettings.AllowReentry,
+                AllowJudge = UniboxSettings.AllowJudge
             };
             //数据存储
             EvalWindows.Add(evalWindow);
@@ -654,7 +658,7 @@ namespace ServoPress.ViewModels
 
 
         [RelayCommand]
-        private void SaveUniBoxConfig()
+        private void SaveConfig()
         {
           
             // 发送保存请求消息
@@ -675,7 +679,7 @@ namespace ServoPress.ViewModels
                 EndX = NoPassSettings.EndX,
                 StartY = NoPassSettings.EndY,
                 EndY = NoPassSettings.EndY,
-                AllowJudege = true
+                AllowJudge = NoPassSettings.AllowJudge
             };
 
             //数据存储
@@ -716,13 +720,6 @@ namespace ServoPress.ViewModels
         }
 
 
-        [RelayCommand]
-        private void SaveNoPassConfig()
-        {
-
-            // 发送保存请求消息
-            WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
-        }
        
 
         #endregion

@@ -161,7 +161,7 @@
                             <TextBox Grid.Row="2" Grid.Column="3" Margin="5" Text="{Binding EndY, StringFormat={}{0:F2}}"/>
 
                             <CheckBox Content="允许重复进入" Grid.Row="3" Grid.Column="1" Margin="5"   VerticalAlignment="Center"  IsChecked="{Binding AllowReentry}"/>
-                            <CheckBox Content="是否评估" Grid.Row="3" Grid.Column="3" Margin="5"   VerticalAlignment="Center"  IsChecked="{Binding AllowJudege}"/>
+                            <CheckBox Content="是否评估" Grid.Row="3" Grid.Column="3" Margin="5"   VerticalAlignment="Center"  IsChecked="{Binding AllowJudge}"/>
 
 
                             <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" 
@@ -179,7 +179,7 @@
 
                                 <Button Content="保存配置" Margin="5" 
                                     Height="28" Padding="15,0" FontSize="16"
-                                    Command="{Binding DataContext.SaveUniBoxConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    Command="{Binding DataContext.SaveConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </StackPanel>
 
                         </Grid>
@@ -231,7 +231,7 @@
 
                                 <Button Content="保存配置" Margin="5" 
                                     Height="28" Padding="15,0" FontSize="16"
-                                    Command="{Binding DataContext.SaveNoPassConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    Command="{Binding DataContext.SaveConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </StackPanel>
 
 

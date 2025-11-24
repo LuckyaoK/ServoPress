@@ -64,7 +64,7 @@ namespace ServoPress.Services
         //Key=工位ID, Value=该工位的Unibox列表
         public Dictionary<int, List<EvalWindow>> StationSettings { get; private set; } = new Dictionary<int, List<EvalWindow>>();
 
-        private const string ConfigPath = "Product/UniBoxConfig.json";
+        private const string ConfigPath = "Product/WindowConfig.json";
 
 
 
@@ -129,7 +129,7 @@ namespace ServoPress.Services
 
                 string jsonString = JsonSerializer.Serialize(configToSave, ConfigJsonContext.Default.ProgramConfig);
                 File.WriteAllText(ConfigPath, jsonString);
-                MessageBox.Show("所有工位设置保存成功!");
+                MessageBox.Show("配置保存成功!");
             }
             catch (Exception ex)
             {

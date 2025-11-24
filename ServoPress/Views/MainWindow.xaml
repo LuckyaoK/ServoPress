@@ -10,7 +10,7 @@
         xmlns:behaviors="clr-namespace:ServoPress.Behaviors"
         
         mc:Ignorable="d"
-        Height="950" Width="1280"
+        Height="1000" Width="1500"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" AllowsTransparency="True" BorderThickness="1" 
         BorderBrush="{StaticResource BorderBrush}"

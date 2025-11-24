@@ -39,7 +39,7 @@ namespace ServoPress.Models
         public string EntryDirection { get; set; }
         public string ExitDirection { get; set; }
         public bool AllowReentry { get; set; }
-        public bool AllowJudege { get; set; }
+        public bool AllowJudge { get; set; }
     }
     public class Unibox
     {
