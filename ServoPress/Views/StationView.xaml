@@ -134,6 +134,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -165,18 +166,26 @@
                             <TextBlock Text="EndY (N):" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
                             <TextBox Grid.Row="2" Grid.Column="3" Margin="5" Text="{Binding EndY, StringFormat={}{0:F2}}"/>
                             <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
-                                <Button Content="保存配置" Margin="5" 
-                                        Command="{Binding DataContext.SaveUniBoxConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                <Button Content="添加Box" Margin="5" 
+                                          Style="{StaticResource StartButtonStyle}" 
+                                        Command="{Binding DataContext.AddUniBoxConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                        
                                 <Button Content="删除Box" Margin="5" 
                                         Style="{StaticResource StopButtonStyle}" 
                                         Command="{Binding DataContext.RemoveUniBoxCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </StackPanel>
 
-
                             <CheckBox Content="允许重复进入" Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" 
                                       VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5"
+                                      IsChecked="{Binding AllowReentry}"/>     
+
+                            <CheckBox Content="是否评估" Grid.Row="3" Grid.Column="2" 
+                                      VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5"
                                       IsChecked="{Binding AllowReentry}"/>
+
+                            <Button Content="保存配置" Margin="5" Grid.Row="4" Grid.Column="1" 
+                                       Command="{Binding DataContext.SaveUniBoxCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>  
+
 
                         </Grid>
                     </Grid>
