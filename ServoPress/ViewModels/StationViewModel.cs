@@ -61,7 +61,6 @@ namespace ServoPress.ViewModels
         public ObservableCollection<string> ExitDirectionsOptions { get; } = new ObservableCollection<string> { "上出", "下出", "左出", "右出", "不出" };
         
        
-
         /// <summary>
         /// Unibox矩形框和箭头集合
         /// </summary>
@@ -253,7 +252,7 @@ namespace ServoPress.ViewModels
 
     
         /// <summary>
-        /// 创建评估窗口
+        /// 拖拽创建评估窗口
         /// </summary>
         /// <param name="minX"></param>
         /// <param name="maxX"></param>
@@ -290,7 +289,7 @@ namespace ServoPress.ViewModels
         /// 创建Box
         /// </summary>
         /// <param name="window"></param>
-        private void AddAnnotationToPlot(EvalWindow window)
+        private void AddAnnotationToPlot(EvalWindow window,int type = 0)
         {
             // 创建矩形
             var rect = new RectangleAnnotation
@@ -318,7 +317,7 @@ namespace ServoPress.ViewModels
                     inBoxSide = BoxSide.Left; break;
                 case "右进":
                     inBoxSide = BoxSide.Right; break;
-                case "不进":
+                default:
                     inBoxSide = BoxSide.None; break;
             }
 
@@ -333,7 +332,7 @@ namespace ServoPress.ViewModels
                     outBoxSide = BoxSide.Left; break;
                 case "右出":
                     outBoxSide = BoxSide.Right; break;
-                case "不出":
+                default:
                     outBoxSide = BoxSide.None; break;
             }
 
@@ -352,13 +351,24 @@ namespace ServoPress.ViewModels
                 triangleAnnotation2 = CreatePoly(false, outBoxSide, triangleAnnotation2, window.StartX, window.EndX, window.StartY, window.EndY);
                 PlotModel.Annotations.Add(triangleAnnotation2);
             }
-
-            Uniboxes.Add(new Unibox
+            if(type == 0)
             {
-                RectangleAnnotation = rect,
-                InSideAnnotation = triangleAnnotation1,
-                OutSideAnnotation=triangleAnnotation2
-            }) ;
+                Uniboxes.Add(new Unibox
+                {
+                    RectangleAnnotation = rect,
+                    InSideAnnotation = triangleAnnotation1,
+                    OutSideAnnotation = triangleAnnotation2
+                });
+            }
+
+            else if(type == 1)
+            {
+                NoPasses.Add(new NoPass
+                {
+                    RectangleAnnotation = rect
+                });
+            }
+
         }
         /// <summary>
         /// 创建箭头
@@ -593,7 +603,8 @@ namespace ServoPress.ViewModels
             var evalWindow = new EvalWindow
             {
                 Enabled = true,
-                Name = $"UniBox {EvalWindows.Count + 1}",
+                Name = $"UniBox {Uniboxes.Count + 1}",
+                Type = WindowType.UniBox,
                 StartX = UniboxSettings.StartX,
                 EndX = UniboxSettings.EndX,
                 StartY = UniboxSettings.StartY,
@@ -604,6 +615,7 @@ namespace ServoPress.ViewModels
             };
             //数据存储
             EvalWindows.Add(evalWindow);
+
             //添加矩形框和箭头
             AddAnnotationToPlot(evalWindow);
 
@@ -630,10 +642,13 @@ namespace ServoPress.ViewModels
                     PlotModel.Annotations.Remove(item);
                 }
                 //移除
-                EvalWindows.RemoveAt(EvalWindows.Count - 1);
+                var itemToRemove = EvalWindows.LastOrDefault(x => x.Type == WindowType.UniBox);
+                EvalWindows.Remove(itemToRemove);
                 Uniboxes.RemoveAt(Uniboxes.Count - 1);
                 // 刷新图表
                 PlotModel.InvalidatePlot(true);
+
+                WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
             }
             catch (Exception ex)
             {
@@ -642,15 +657,59 @@ namespace ServoPress.ViewModels
         }
 
         [RelayCommand]
-        private void SaveNoPass()
+        private void SaveNoPassConfig()
         {
+            //创建NoPass窗口配置用于传入服务
+            var evalWindow = new EvalWindow
+            {
+                Enabled = true,
+                Name = $"NoPass {NoPasses.Count + 1}",
+                Type = WindowType.NoPass,
+                StartX = NoPassSettings.StartX,
+                EndX = NoPassSettings.EndX,
+                StartY = NoPassSettings.EndY,
+                EndY = NoPassSettings.EndY,
+                AllowJudege = true
+            };
 
+            //数据存储
+            EvalWindows.Add(evalWindow);
+            //创建NoPass直线标注
+            AddAnnotationToPlot(evalWindow,1);
+            //刷新图表
+            PlotModel.InvalidatePlot(true);
+
+            // 发送保存请求消息
+            WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
         }
 
         [RelayCommand]
         private void RemoveNoPass()
         {
+            try
+            {
+                int count = NoPasses.Count;
+                var values = PlotModel.Annotations.Where(p => p == NoPasses[count - 1].RectangleAnnotation).ToList();
 
+                //移除UI
+                foreach (var item in values)
+                {
+                    PlotModel.Annotations.Remove(item);
+                }
+
+                var itemToRemove = EvalWindows.LastOrDefault(x => x.Type == WindowType.NoPass);
+                EvalWindows.Remove(itemToRemove);
+                NoPasses.RemoveAt(NoPasses.Count - 1);
+                // 刷新图表
+                PlotModel.InvalidatePlot(true);
+
+                // 发送保存请求消息
+                WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         #endregion

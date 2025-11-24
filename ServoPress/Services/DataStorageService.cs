@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace ServoPress.Services
 {
     /// <summary>
-    /// 数据库存储服务类
+    /// 数据库存储服务类(EFCore)
     /// </summary>
     public class DataStorageService
     {

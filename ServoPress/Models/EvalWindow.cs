@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace ServoPress.Models
 {
+    public enum WindowType
+    {
+        UniBox,
+        NoPass
+    }
     /// <summary>
     /// 评估窗口
     /// </summary>
@@ -14,7 +19,7 @@ namespace ServoPress.Models
     {
         public bool Enabled { get; set; }
         public string Name { get; set; }
-        public string Type { get; set; }
+        public WindowType Type { get; set; }
         /// <summary>
         /// 起始位移
         /// </summary>
