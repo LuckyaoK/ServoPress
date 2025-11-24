@@ -252,7 +252,7 @@ namespace ServoPress.ViewModels
 
     
         /// <summary>
-        /// 拖拽创建评估窗口
+        /// 手动拖拽创建评估窗口
         /// </summary>
         /// <param name="minX"></param>
         /// <param name="maxX"></param>
@@ -594,12 +594,9 @@ namespace ServoPress.ViewModels
         }
 
         [RelayCommand]
-        private void SaveUniBoxConfig()
+        private void AddUniBox()
         {
-            //移除旧Box
-            RemoveUniBox();
-
-            // 重新创建数据模型,防止用户手动填写绘制Box
+            // 创建数据模型
             var evalWindow = new EvalWindow
             {
                 Enabled = true,
@@ -621,8 +618,7 @@ namespace ServoPress.ViewModels
 
             //刷新图表
             PlotModel.InvalidatePlot(true);
-            // 发送保存请求消息
-            WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
+     
         }
 
         [RelayCommand]
@@ -648,7 +644,6 @@ namespace ServoPress.ViewModels
                 // 刷新图表
                 PlotModel.InvalidatePlot(true);
 
-                WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
             }
             catch (Exception ex)
             {
@@ -656,8 +651,19 @@ namespace ServoPress.ViewModels
             }
         }
 
+
+
         [RelayCommand]
-        private void SaveNoPassConfig()
+        private void SaveUniBoxConfig()
+        {
+          
+            // 发送保存请求消息
+            WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
+        }
+
+
+        [RelayCommand]
+        private void AddNoPass()
         {
             //创建NoPass窗口配置用于传入服务
             var evalWindow = new EvalWindow
@@ -675,13 +681,12 @@ namespace ServoPress.ViewModels
             //数据存储
             EvalWindows.Add(evalWindow);
             //创建NoPass直线标注
-            AddAnnotationToPlot(evalWindow,1);
+            AddAnnotationToPlot(evalWindow, 1);
             //刷新图表
             PlotModel.InvalidatePlot(true);
 
-            // 发送保存请求消息
-            WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
         }
+
 
         [RelayCommand]
         private void RemoveNoPass()
@@ -703,14 +708,22 @@ namespace ServoPress.ViewModels
                 // 刷新图表
                 PlotModel.InvalidatePlot(true);
 
-                // 发送保存请求消息
-                WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
+
+
+        [RelayCommand]
+        private void SaveNoPassConfig()
+        {
+
+            // 发送保存请求消息
+            WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
+        }
+       
 
         #endregion
     }

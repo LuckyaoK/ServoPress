@@ -123,11 +123,8 @@
                     </GroupBox>
                 </TabItem>
 
-                <TabItem Header="Unibox" >
+                <TabItem Header="Unibox">
                     <Grid Margin="5">
-                        <!-- 
-                        此 Grid 绑定到 ViewModel 中的 UniboxSettings 属性
-                        -->
                         <Grid DataContext="{Binding UniboxSettings}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -143,49 +140,47 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Row 0: 进入/退出 方向 -->
                             <TextBlock Text="进入方向:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
                             <ComboBox Grid.Row="0" Grid.Column="1" Margin="5"
-                                      ItemsSource="{Binding DataContext.EntryDirectionsOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                      SelectedItem="{Binding EntryDirection}"/>
+                      ItemsSource="{Binding DataContext.EntryDirectionsOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                      SelectedItem="{Binding EntryDirection}"/>
 
                             <TextBlock Text="退出方向:" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
                             <ComboBox Grid.Row="0" Grid.Column="3" Margin="5"
-                                      ItemsSource="{Binding DataContext.ExitDirectionsOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                      SelectedItem="{Binding ExitDirection}"/>
+                      ItemsSource="{Binding DataContext.ExitDirectionsOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                      SelectedItem="{Binding ExitDirection}"/>
 
-                            <!-- Row 1: StartX / EndX -->
                             <TextBlock Text="StartX (mm):" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
                             <TextBox Grid.Row="1" Grid.Column="1" Margin="5" Text="{Binding StartX, StringFormat={}{0:F2}}"/>
                             <TextBlock Text="EndX (mm):" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
                             <TextBox Grid.Row="1" Grid.Column="3" Margin="5" Text="{Binding EndX, StringFormat={}{0:F2}}"/>
 
-                            <!-- Row 2: StartY / EndY -->
                             <TextBlock Text="StartY (N):" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
                             <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Text="{Binding StartY, StringFormat={}{0:F2}}"/>
                             <TextBlock Text="EndY (N):" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Margin="5"/>
                             <TextBox Grid.Row="2" Grid.Column="3" Margin="5" Text="{Binding EndY, StringFormat={}{0:F2}}"/>
-                            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
+
+                            <CheckBox Content="允许重复进入" Grid.Row="3" Grid.Column="1" Margin="5"   VerticalAlignment="Center"  IsChecked="{Binding AllowReentry}"/>
+                            <CheckBox Content="是否评估" Grid.Row="3" Grid.Column="3" Margin="5"   VerticalAlignment="Center"  IsChecked="{Binding AllowJudege}"/>
+
+
+                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" 
+                                Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10">
+
                                 <Button Content="添加Box" Margin="5" 
-                                          Style="{StaticResource StartButtonStyle}" 
-                                        Command="{Binding DataContext.AddUniBoxConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                       
+                                    Height="28" Padding="15,0" FontSize="16"
+                                    Style="{StaticResource StartButtonStyle}" 
+                                    Command="{Binding DataContext.AddUniBoxCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
                                 <Button Content="删除Box" Margin="5" 
-                                        Style="{StaticResource StopButtonStyle}" 
-                                        Command="{Binding DataContext.RemoveUniBoxCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    Height="28" Padding="15,0" FontSize="16"
+                                    Style="{StaticResource StopButtonStyle}" 
+                                    Command="{Binding DataContext.RemoveUniBoxCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+                                <Button Content="保存配置" Margin="5" 
+                                    Height="28" Padding="15,0" FontSize="16"
+                                    Command="{Binding DataContext.SaveUniBoxConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </StackPanel>
-
-                            <CheckBox Content="允许重复进入" Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" 
-                                      VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5"
-                                      IsChecked="{Binding AllowReentry}"/>     
-
-                            <CheckBox Content="是否评估" Grid.Row="3" Grid.Column="2" 
-                                      VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5"
-                                      IsChecked="{Binding AllowReentry}"/>
-
-                            <Button Content="保存配置" Margin="5" Grid.Row="4" Grid.Column="1" 
-                                       Command="{Binding DataContext.SaveUniBoxCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>  
-
 
                         </Grid>
                     </Grid>
@@ -219,15 +214,26 @@
 
                             <CheckBox Content="是否评估" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" 
                                 VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5"
-                                IsChecked="{Binding AllowJudge}"/>  
-                            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="0,20">
-                                <Button Content="保存配置" Margin="5" 
-                        Command="{Binding DataContext.SaveNoPassConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                IsChecked="{Binding AllowJudge}"/>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" 
+                                Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30">
+
+                                <Button Content="添加Box" Margin="5" 
+                                    Height="28" Padding="15,0" FontSize="16"
+                                    Style="{StaticResource StartButtonStyle}" 
+                                    Command="{Binding DataContext.AddNoPassCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
 
                                 <Button Content="删除Box" Margin="5" 
-                        Style="{StaticResource StopButtonStyle}" 
-                        Command="{Binding DataContext.RemoveNoPassCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                    Height="28" Padding="15,0" FontSize="16"
+                                    Style="{StaticResource StopButtonStyle}" 
+                                    Command="{Binding DataContext.RemoveNoPassCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+                                <Button Content="保存配置" Margin="5" 
+                                    Height="28" Padding="15,0" FontSize="16"
+                                    Command="{Binding DataContext.SaveNoPassConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </StackPanel>
+
 
                         </Grid>
                     </Grid>
