@@ -1,4 +1,5 @@
 ﻿using OxyPlot;
+using OxyPlot.Annotations;
 using ServoPress.Models;
 using ServoPress.ViewModels;
 using System.Drawing;
@@ -166,12 +167,15 @@ namespace ServoPress.Services
         /// <param name="curve">代表曲线的点列表。例如 P1, P2, P3...</param>
         /// <param name="box">目标矩形框 (UniBox)</param>
         /// <returns>一个包含所有相交事件的列表</returns>
-        public List<IntersectionEvent> AnalyzeCurve(List<DataPoint> wpfBoxCorners, double x, double y, double width, double height)
+        public List<IntersectionEvent> AnalyzeCurve(List<DataPoint> wpfBoxCorners, EvalWindow Box)
         {
+            double width = Math.Abs(Box.EndX - Box.StartX);
+            double height = Math.Abs(Box.EndY - Box.StartY);
+
             // 1. 将 WPF Box 角点转换为 PointF 数组
             List<PointF> curve = wpfBoxCorners.Select(p => new PointF((float)p.X, (float)p.Y)).ToList();
 
-            RectangleF box = new RectangleF((float)(x), (float)y, (float)width, (float)height);
+            RectangleF box = new RectangleF((float)(Box.StartX), (float)Box.StartY, (float)width, (float)height);
             var events = new List<IntersectionEvent>();
             if (curve == null || curve.Count < 2)
             {
@@ -239,6 +243,217 @@ namespace ServoPress.Services
             return events;
         }
 
+        /// <summary>
+        /// 创建箭头
+        /// </summary>
+        /// <param name="boxSide"></param>
+        /// <param name="triangleAnnotation"></param>
+        /// <returns></returns>
+        public PolygonAnnotation CreatePoly(bool IsEnter, BoxSide boxSide, PolygonAnnotation triangleAnnotation, double startX, double endX, double startY, double endY)
+        {
+            #region 旧逻辑
+            //triangleAnnotation = new PolygonAnnotation
+            //{
+            //    Fill = OxyColor.FromArgb(0x40, 0x00, 0x00, 0xFF), // 40%透明度的蓝色, 
+            //    Stroke = OxyColor.FromArgb(0x40, 0x00, 0x00, 0xFF), // 40%透明度的蓝色,               
+            //    StrokeThickness = 2,
+            //    Layer = AnnotationLayer.BelowSeries
+            //};
+
+            //if (IsEnter)
+            //{
+            //    if (boxSide == BoxSide.Top)
+            //    {
+            //        double pointCenterX = (startX + endX) / 2;
+            //        double length = (endX - startX) / 32;
+            //        double y = Math.Sqrt(3) * length;
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX - length, endY));
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX + length, endY));
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX, endY - y));
+            //    }
+
+            //    else if (boxSide == BoxSide.Bottom)
+            //    {
+            //        double pointCenterX = (startX + endX) / 2;
+            //        double length = (endX - startX) / 32;
+
+            //        double y = Math.Sqrt(3) * length;
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX - length, startY));
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX + length, startY));
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX, startY + y));
+            //    }
+
+            //    else if (boxSide == BoxSide.Left)
+            //    {
+            //        double pointCenterY = (startY + endY) / 2;
+            //        double length = (endY - startY) / 32;
+            //        double x = Math.Sqrt(3) * length;
+            //        triangleAnnotation.Points.Add(new DataPoint(startX, pointCenterY - length));
+            //        triangleAnnotation.Points.Add(new DataPoint(startX, pointCenterY + length));
+            //        triangleAnnotation.Points.Add(new DataPoint(startX + x, pointCenterY));
+            //    }
+
+            //    else if (boxSide == BoxSide.Right)
+            //    {
+            //        double pointCenterY = (startY + endY) / 2;
+            //        double length = (endY - startY) / 32;
+            //        double x = Math.Sqrt(3) * length;
+            //        triangleAnnotation.Points.Add(new DataPoint(endX, pointCenterY - length));
+            //        triangleAnnotation.Points.Add(new DataPoint(endX, pointCenterY + length));
+            //        triangleAnnotation.Points.Add(new DataPoint(endX - x, pointCenterY));
+            //    }
+            //}
+
+            //else
+            //{
+            //    if (boxSide == BoxSide.Top)
+            //    {
+            //        double pointCenterX = (startX + endX) / 2;
+            //        double length = (endX - startX) / 32;
+            //        double y = Math.Sqrt(3) * length;
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX - length, endY));
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX + length, endY));
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX, endY + y));
+            //    }
+
+            //    else if (boxSide == BoxSide.Bottom)
+            //    {
+            //        double pointCenterX = (startX + endX) / 2;
+            //        double length = (endX - startX) / 32;
+            //        double y = Math.Sqrt(3) * length;
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX - length, startY));
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX + length, startY));
+            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX, startY - y));
+            //    }
+
+            //    else if (boxSide == BoxSide.Left)
+            //    {
+            //        double pointCenterY = (startY + endY) / 2;
+            //        double length = (endY - startY) / 32;
+            //        double x = Math.Sqrt(3) * length;
+            //        triangleAnnotation.Points.Add(new DataPoint(startX, pointCenterY - length));
+            //        triangleAnnotation.Points.Add(new DataPoint(startX, pointCenterY + length));
+            //        triangleAnnotation.Points.Add(new DataPoint(startX - x, pointCenterY));
+            //    }
+
+            //    else if (boxSide == BoxSide.Right)
+            //    {
+            //        double pointCenterY = (startY + endY) / 2;
+            //        double length = (endY - startY) / 32;
+            //        double x = Math.Sqrt(3) * length;
+            //        triangleAnnotation.Points.Add(new DataPoint(endX, pointCenterY - length));
+            //        triangleAnnotation.Points.Add(new DataPoint(endX, pointCenterY + length));
+            //        triangleAnnotation.Points.Add(new DataPoint(endX + x, pointCenterY));
+            //    }
+
+            //}
+
+            //return triangleAnnotation;
+            #endregion
+
+            // 为了保证箭头在视觉上协调，我们根据 Box 的尺寸动态计算箭头大小
+            // 例如：长度取 Box 宽度的 15%，宽度取 Box 高度的 10% (近似等边视觉效果)
+            double boxWidth = Math.Abs(endX - startX);
+            double boxHeight = Math.Abs(endY - startY);
+
+            // 设置最小尺寸，防止 Box 太小时箭头消失
+            double lenX = Math.Max(boxWidth * 0.15, boxWidth > 0 ? boxWidth * 0.15 : 1.0);
+            double lenY = Math.Max(boxHeight * 0.15, boxHeight > 0 ? boxHeight * 0.15 : 10.0);
+
+
+
+            DataPoint tip = new DataPoint(0, 0);  // 箭头顶点
+            DataPoint p1 = new DataPoint(0, 0);   // 底边角点1
+            DataPoint p2 = new DataPoint(0, 0);   // 底边角点2
+
+            double cx = (startX + endX) / 2;
+            double cy = (startY + endY) / 2;
+
+            // 定义等边三角形的比例因子：底边宽度 = 高度 * (2 / sqrt(3)) ≈ 1.155
+            // 但因为XY轴比例不同，这里用 lenX 和 lenY 分别作为基准
+
+            bool isGenerated = false;
+
+            // 处理 进入箭头
+            if (IsEnter)
+            {
+                switch (boxSide)
+                {
+                    case BoxSide.Left: // 从左边进入，箭头在左边框，指向右(内部)
+                        tip = new DataPoint(startX + lenX, cy);
+                        p1 = new DataPoint(startX, cy - lenY / 2);
+                        p2 = new DataPoint(startX, cy + lenY / 2);
+                        isGenerated = true;
+                        break;
+                    case BoxSide.Right: // 从右边进入，箭头在右边框，指向左(内部)
+                        tip = new DataPoint(endX - lenX, cy);
+                        p1 = new DataPoint(endX, cy - lenY / 2);
+                        p2 = new DataPoint(endX, cy + lenY / 2);
+                        isGenerated = true;
+                        break;
+                    case BoxSide.Top: // 从上方进入，箭头在上边框，指向下
+                        tip = new DataPoint(cx, endY - lenY);
+                        p1 = new DataPoint(cx - lenX / 2, endY);
+                        p2 = new DataPoint(cx + lenX / 2, endY);
+                        isGenerated = true;
+                        break;
+                    case BoxSide.Bottom: // 从下方进入，箭头在下边框，指向上
+                        tip = new DataPoint(cx, startY + lenY);
+                        p1 = new DataPoint(cx - lenX / 2, startY);
+                        p2 = new DataPoint(cx + lenX / 2, startY);
+                        isGenerated = true;
+                        break;
+                }
+            }
+
+            else
+            {
+                // 退出箭头的逻辑：
+                switch (boxSide)
+                {
+                    case BoxSide.Left: // 向左退出，箭头在左边框，指向左(外部)
+                        tip = new DataPoint(startX - lenX, cy); // 顶点向外延伸
+                        p1 = new DataPoint(startX, cy - lenY / 2); // 底边在框上
+                        p2 = new DataPoint(startX, cy + lenY / 2);
+                        isGenerated = true;
+                        break;
+                    case BoxSide.Right: // 向右退出，箭头在右边框，指向右(外部)
+                        tip = new DataPoint(endX + lenX, cy);
+                        p1 = new DataPoint(endX, cy - lenY / 2);
+                        p2 = new DataPoint(endX, cy + lenY / 2);
+                        isGenerated = true;
+                        break;
+                    case BoxSide.Top: // 向上退出
+                        tip = new DataPoint(cx, endY + lenY);
+                        p1 = new DataPoint(cx - lenX / 2, endY);
+                        p2 = new DataPoint(cx + lenX / 2, endY);
+                        isGenerated = true;
+                        break;
+                    case BoxSide.Bottom: // 向下退出
+                        tip = new DataPoint(cx, startY - lenY);
+                        p1 = new DataPoint(cx - lenX / 2, startY);
+                        p2 = new DataPoint(cx + lenX / 2, startY);
+                        isGenerated = true;
+                        break;
+                }
+            }
+
+            if (!isGenerated) return null;
+
+            var poly = new PolygonAnnotation
+            {
+                Fill = OxyColor.FromArgb(0x40, 0x00, 0x00, 0xFF), // 40%透明度的蓝色, 
+                Stroke = OxyColor.FromArgb(0x40, 0x00, 0x00, 0xFF), // 40%透明度的蓝色,               
+                StrokeThickness = 2,
+                Layer = AnnotationLayer.BelowSeries
+            };
+
+            poly.Points.Add(tip);
+            poly.Points.Add(p1);
+            poly.Points.Add(p2);
+
+            return poly;
+        }
 
         public bool AnalyzeContainPoint(System.Windows.Point _point, double x, double y, double width, double height)
         {
@@ -348,75 +563,98 @@ namespace ServoPress.Services
         /// <returns>Item1: 是否通过(bool), Item2: 结果描述(string)</returns>
         public (bool IsOk, string Message) VerifyBoxResult(EvalWindow box, List<IntersectionEvent> events)
         {
-            // 获取期望的进出方向枚举
-            BoxSide expectedInSide = MapDirectionToSide(box.EntryDirection);
-            BoxSide expectedOutSide = MapDirectionToSide(box.ExitDirection);
-
-            // 如果没有发生任何交互
-            if (events == null || events.Count == 0)
+            var result = (false, "");
+            switch (box.Type)
             {
-                if (expectedInSide==BoxSide.None && expectedOutSide == BoxSide.None)
-                    return (true, "未检测到曲线进入");
-                else
-                    return (false, "未检测到曲线进入");
+                case WindowType.NoPass:
+                    // NoPass判定判定
+                    if (events == null || events.Count == 0)
+                    {
+                        result = (true, "曲线无相交");
+                    }
+                    else
+                    {
+                        result = (false, "曲线相交");
+                    }
+                    break;
+
+                case WindowType.UniBox:
+                    // UniBox判定
+                    BoxSide expectedInSide = MapDirectionToSide(box.EntryDirection);
+                    BoxSide expectedOutSide = MapDirectionToSide(box.ExitDirection);
+
+                    // 如果没有发生任何交互
+                    if (events == null || events.Count == 0)
+                    {
+                        if (expectedInSide == BoxSide.None && expectedOutSide == BoxSide.None)
+                            result = (true, "未检测到曲线进入和退出");
+                        else
+                            result = (false, "未检测到曲线进入");
+                    }
+                    else
+                    {
+                        // 获取实际的进出事件
+                        var firstEvent = events[0];
+                        var lastEvent = events[events.Count - 1];
+
+                        // --- 判定逻辑 ---
+                        bool inResult = (firstEvent.Side == expectedInSide);
+                        bool outResult = (lastEvent.Side == expectedOutSide);
+
+                        // 如果退出方向为不出 (BoxSide.None)，则默认为 True
+                        if (expectedOutSide == BoxSide.None) outResult = true;
+
+                        bool inRepeat = false;
+                        bool outRepeat = false;
+                        bool touchIllegalSide = false;
+
+                        // 遍历中间过程 (排除首尾)
+                        for (int j = 1; j < events.Count - 1; j++)
+                        {
+                            var currentSide = events[j].Side;
+
+                            // 检查是否触碰了非进出方向的边界
+                            if (currentSide != expectedInSide && currentSide != expectedOutSide)
+                            {
+                                touchIllegalSide = true;
+                            }
+
+                            // 检查重复进入
+                            if (currentSide == expectedInSide) inRepeat = true;
+
+                            // 检查重复退出
+                            if (currentSide == expectedOutSide) outRepeat = true;
+                        }
+
+                        StringBuilder errors = new StringBuilder();
+
+                        // 1. 判定进入
+                        if (!inResult) errors.AppendLine($"进入方向错误(设置:{box.EntryDirection};实际:{GetSideName(firstEvent.Side)}进)");
+                        else if (!box.AllowReentry && inRepeat) errors.AppendLine("重复进入");
+
+                        // 2. 判定退出
+                        if (!outResult) errors.AppendLine($"退出方向错误(设置:{box.ExitDirection};实际:{GetSideName(lastEvent.Side)}出)");
+                        else if (!box.AllowReentry && outRepeat) errors.AppendLine("重复退出");
+
+                        // 3. 判定非法触碰
+                        if (touchIllegalSide) errors.AppendLine("触碰非法边界");
+
+                        // --- 最终结论 ---
+                        if (errors.Length == 0)
+                        {
+                            result = (true, "OK");
+                        }
+                        else
+                        {
+                            result = (false, "NG " + string.Join(", ", errors));
+                        }
+                    }
+
+                    break;
             }
 
-            // 获取实际的进出事件
-            var firstEvent = events[0];
-            var lastEvent = events[events.Count - 1];
-
-            // --- 判定逻辑 ---
-            bool inResult = (firstEvent.Side == expectedInSide);
-            bool outResult = (lastEvent.Side == expectedOutSide);
-
-            // 如果退出方向为不出 (BoxSide.None)，则默认为 True
-            if (expectedOutSide == BoxSide.None) outResult = true;
-
-            bool inRepeat = false;
-            bool outRepeat = false;
-            bool touchIllegalSide = false;
-
-            // 遍历中间过程 (排除首尾)
-            for (int j = 1; j < events.Count - 1; j++)
-            {
-                var currentSide = events[j].Side;
-
-                // 检查是否触碰了非进出方向的边界
-                if (currentSide != expectedInSide && currentSide != expectedOutSide)
-                {
-                    touchIllegalSide = true;
-                }
-
-                // 检查重复进入
-                if (currentSide == expectedInSide) inRepeat = true;
-
-                // 检查重复退出
-                if (currentSide == expectedOutSide) outRepeat = true;
-            }
-
-       
-           StringBuilder errors = new StringBuilder();
-
-            // 1. 判定进入
-            if (!inResult) errors.AppendLine($"进入方向错误(设置:{box.EntryDirection};实际:{GetSideName(firstEvent.Side)}进)");
-            else if (!box.AllowReentry && inRepeat) errors.AppendLine("重复进入");
-
-            // 2. 判定退出
-            if (!outResult) errors.AppendLine($"退出方向错误(设置:{box.ExitDirection};实际:{GetSideName(lastEvent.Side)}出)");
-            else if (!box.AllowReentry && outRepeat) errors.AppendLine("重复退出");
-
-            // 3. 判定非法触碰
-            if (touchIllegalSide) errors.AppendLine("触碰非法边界");
-
-            // --- 最终结论 ---
-            if (errors.Length==0)
-            {
-                return (true, "OK");
-            }
-            else
-            {
-                return (false, "NG " + string.Join(", ", errors));
-            }
+            return result;
+         
         }
 
         #region 辅助方法 (私有)

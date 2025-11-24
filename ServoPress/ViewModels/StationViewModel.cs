@@ -151,7 +151,7 @@ namespace ServoPress.ViewModels
                 new ProcessValue { Name = "最终压力", Value = "0.0", Unit = "N" },
                 new ProcessValue { Name = "结果详情", Value = "", Unit = "" }
             };
-
+         
             // 初始化 UniboxSettings
             UniboxSettings = new EvalWindow
             {
@@ -267,7 +267,7 @@ namespace ServoPress.ViewModels
             var evalWindow = new EvalWindow
             {
                 Enabled = true,
-                Name = $"UniBox {EvalWindows.Count + 1}",
+                Name = $"UniBox {Uniboxes.Count + 1}",
                 StartX = minX,
                 EndX = maxX,
                 StartY = minY,
@@ -289,10 +289,10 @@ namespace ServoPress.ViewModels
         }
 
         /// <summary>
-        /// 创建Box
+        /// 创建评估窗口
         /// </summary>
         /// <param name="window"></param>
-        private void AddAnnotationToPlot(EvalWindow window,int type = 0)
+        private void AddAnnotationToPlot(EvalWindow window)
         {
             // 创建矩形
             var rect = new RectangleAnnotation
@@ -343,7 +343,7 @@ namespace ServoPress.ViewModels
             //进入
             if(inBoxSide !=BoxSide.None)
             {
-                triangleAnnotation1 = CreatePoly(true, inBoxSide, triangleAnnotation1, window.StartX, window.EndX, window.StartY, window.EndY);
+                triangleAnnotation1 = _curveBoxService.CreatePoly(true, inBoxSide, triangleAnnotation1, window.StartX, window.EndX, window.StartY, window.EndY);
                 PlotModel.Annotations.Add(triangleAnnotation1);
             }
 
@@ -351,10 +351,10 @@ namespace ServoPress.ViewModels
             //退出
             if (outBoxSide != BoxSide.None)
             {
-                triangleAnnotation2 = CreatePoly(false, outBoxSide, triangleAnnotation2, window.StartX, window.EndX, window.StartY, window.EndY);
+                triangleAnnotation2 = _curveBoxService.CreatePoly(false, outBoxSide, triangleAnnotation2, window.StartX, window.EndX, window.StartY, window.EndY);
                 PlotModel.Annotations.Add(triangleAnnotation2);
             }
-            if(type == 0)
+            if(window.Type==WindowType.UniBox)
             {
                 Uniboxes.Add(new Unibox
                 {
@@ -364,7 +364,7 @@ namespace ServoPress.ViewModels
                 });
             }
 
-            else if(type == 1)
+            else if(window.Type == WindowType.NoPass)
             {
                 NoPasses.Add(new NoPass
                 {
@@ -373,217 +373,7 @@ namespace ServoPress.ViewModels
             }
 
         }
-        /// <summary>
-        /// 创建箭头
-        /// </summary>
-        /// <param name="boxSide"></param>
-        /// <param name="triangleAnnotation"></param>
-        /// <returns></returns>
-        private PolygonAnnotation CreatePoly(bool IsEnter, BoxSide boxSide, PolygonAnnotation triangleAnnotation, double startX, double endX, double startY, double endY)
-        {
-            #region 旧逻辑
-            //triangleAnnotation = new PolygonAnnotation
-            //{
-            //    Fill = OxyColor.FromArgb(0x40, 0x00, 0x00, 0xFF), // 40%透明度的蓝色, 
-            //    Stroke = OxyColor.FromArgb(0x40, 0x00, 0x00, 0xFF), // 40%透明度的蓝色,               
-            //    StrokeThickness = 2,
-            //    Layer = AnnotationLayer.BelowSeries
-            //};
-
-            //if (IsEnter)
-            //{
-            //    if (boxSide == BoxSide.Top)
-            //    {
-            //        double pointCenterX = (startX + endX) / 2;
-            //        double length = (endX - startX) / 32;
-            //        double y = Math.Sqrt(3) * length;
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX - length, endY));
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX + length, endY));
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX, endY - y));
-            //    }
-
-            //    else if (boxSide == BoxSide.Bottom)
-            //    {
-            //        double pointCenterX = (startX + endX) / 2;
-            //        double length = (endX - startX) / 32;
-
-            //        double y = Math.Sqrt(3) * length;
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX - length, startY));
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX + length, startY));
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX, startY + y));
-            //    }
-
-            //    else if (boxSide == BoxSide.Left)
-            //    {
-            //        double pointCenterY = (startY + endY) / 2;
-            //        double length = (endY - startY) / 32;
-            //        double x = Math.Sqrt(3) * length;
-            //        triangleAnnotation.Points.Add(new DataPoint(startX, pointCenterY - length));
-            //        triangleAnnotation.Points.Add(new DataPoint(startX, pointCenterY + length));
-            //        triangleAnnotation.Points.Add(new DataPoint(startX + x, pointCenterY));
-            //    }
-
-            //    else if (boxSide == BoxSide.Right)
-            //    {
-            //        double pointCenterY = (startY + endY) / 2;
-            //        double length = (endY - startY) / 32;
-            //        double x = Math.Sqrt(3) * length;
-            //        triangleAnnotation.Points.Add(new DataPoint(endX, pointCenterY - length));
-            //        triangleAnnotation.Points.Add(new DataPoint(endX, pointCenterY + length));
-            //        triangleAnnotation.Points.Add(new DataPoint(endX - x, pointCenterY));
-            //    }
-            //}
-
-            //else
-            //{
-            //    if (boxSide == BoxSide.Top)
-            //    {
-            //        double pointCenterX = (startX + endX) / 2;
-            //        double length = (endX - startX) / 32;
-            //        double y = Math.Sqrt(3) * length;
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX - length, endY));
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX + length, endY));
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX, endY + y));
-            //    }
-
-            //    else if (boxSide == BoxSide.Bottom)
-            //    {
-            //        double pointCenterX = (startX + endX) / 2;
-            //        double length = (endX - startX) / 32;
-            //        double y = Math.Sqrt(3) * length;
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX - length, startY));
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX + length, startY));
-            //        triangleAnnotation.Points.Add(new DataPoint(pointCenterX, startY - y));
-            //    }
-
-            //    else if (boxSide == BoxSide.Left)
-            //    {
-            //        double pointCenterY = (startY + endY) / 2;
-            //        double length = (endY - startY) / 32;
-            //        double x = Math.Sqrt(3) * length;
-            //        triangleAnnotation.Points.Add(new DataPoint(startX, pointCenterY - length));
-            //        triangleAnnotation.Points.Add(new DataPoint(startX, pointCenterY + length));
-            //        triangleAnnotation.Points.Add(new DataPoint(startX - x, pointCenterY));
-            //    }
-
-            //    else if (boxSide == BoxSide.Right)
-            //    {
-            //        double pointCenterY = (startY + endY) / 2;
-            //        double length = (endY - startY) / 32;
-            //        double x = Math.Sqrt(3) * length;
-            //        triangleAnnotation.Points.Add(new DataPoint(endX, pointCenterY - length));
-            //        triangleAnnotation.Points.Add(new DataPoint(endX, pointCenterY + length));
-            //        triangleAnnotation.Points.Add(new DataPoint(endX + x, pointCenterY));
-            //    }
-
-            //}
-
-            //return triangleAnnotation;
-            #endregion
-
-            // 为了保证箭头在视觉上协调，我们根据 Box 的尺寸动态计算箭头大小
-            // 例如：长度取 Box 宽度的 15%，宽度取 Box 高度的 10% (近似等边视觉效果)
-            double boxWidth = Math.Abs(endX - startX);
-            double boxHeight = Math.Abs(endY - startY);
-
-            // 设置最小尺寸，防止 Box 太小时箭头消失
-            double lenX = Math.Max(boxWidth * 0.15, boxWidth > 0 ? boxWidth * 0.15 : 1.0);
-            double lenY = Math.Max(boxHeight * 0.15, boxHeight > 0 ? boxHeight * 0.15 : 10.0);
-
-
-
-            DataPoint tip = new DataPoint(0, 0);  // 箭头顶点
-            DataPoint p1 = new DataPoint(0, 0);   // 底边角点1
-            DataPoint p2 = new DataPoint(0, 0);   // 底边角点2
-
-            double cx = (startX + endX) / 2;
-            double cy = (startY + endY) / 2;
-
-            // 定义等边三角形的比例因子：底边宽度 = 高度 * (2 / sqrt(3)) ≈ 1.155
-            // 但因为XY轴比例不同，这里用 lenX 和 lenY 分别作为基准
-
-            bool isGenerated = false;
-
-            // 处理 进入箭头
-            if (IsEnter)
-            {
-                switch (boxSide)
-                {
-                    case BoxSide.Left: // 从左边进入，箭头在左边框，指向右(内部)
-                        tip = new DataPoint(startX + lenX, cy);
-                        p1 = new DataPoint(startX, cy - lenY / 2);
-                        p2 = new DataPoint(startX, cy + lenY / 2);
-                        isGenerated = true;
-                        break;
-                    case BoxSide.Right: // 从右边进入，箭头在右边框，指向左(内部)
-                        tip = new DataPoint(endX - lenX, cy);
-                        p1 = new DataPoint(endX, cy - lenY / 2);
-                        p2 = new DataPoint(endX, cy + lenY / 2);
-                        isGenerated = true;
-                        break;
-                    case BoxSide.Top: // 从上方进入，箭头在上边框，指向下
-                        tip = new DataPoint(cx, endY - lenY);
-                        p1 = new DataPoint(cx - lenX / 2, endY); 
-                        p2 = new DataPoint(cx + lenX / 2, endY);
-                        isGenerated = true;
-                        break;
-                    case BoxSide.Bottom: // 从下方进入，箭头在下边框，指向上
-                        tip = new DataPoint(cx, startY+lenY);
-                        p1 = new DataPoint(cx - lenX / 2, startY);
-                        p2 = new DataPoint(cx + lenX / 2, startY);
-                        isGenerated = true;
-                        break;
-                }
-            }
-            
-            else
-            {
-                // 退出箭头的逻辑：
-                switch (boxSide)
-                {
-                    case BoxSide.Left: // 向左退出，箭头在左边框，指向左(外部)
-                        tip = new DataPoint(startX - lenX, cy); // 顶点向外延伸
-                        p1 = new DataPoint(startX, cy - lenY / 2); // 底边在框上
-                        p2 = new DataPoint(startX, cy + lenY / 2);
-                        isGenerated = true;
-                        break;
-                    case BoxSide.Right: // 向右退出，箭头在右边框，指向右(外部)
-                        tip = new DataPoint(endX + lenX, cy);
-                        p1 = new DataPoint(endX, cy - lenY / 2);
-                        p2 = new DataPoint(endX, cy + lenY / 2);
-                        isGenerated = true;
-                        break;
-                    case BoxSide.Top: // 向上退出
-                        tip = new DataPoint(cx, endY + lenY);
-                        p1 = new DataPoint(cx - lenX / 2, endY);
-                        p2 = new DataPoint(cx + lenX / 2, endY);
-                        isGenerated = true;
-                        break;
-                    case BoxSide.Bottom: // 向下退出
-                        tip = new DataPoint(cx, startY - lenY);
-                        p1 = new DataPoint(cx - lenX / 2, startY);
-                        p2 = new DataPoint(cx + lenX / 2, startY);
-                        isGenerated = true;
-                        break;
-                }
-            }
-
-            if (!isGenerated) return null;
-
-            var poly = new PolygonAnnotation
-            {
-                Fill = OxyColor.FromArgb(0x40, 0x00, 0x00, 0xFF), // 40%透明度的蓝色, 
-                Stroke = OxyColor.FromArgb(0x40, 0x00, 0x00, 0xFF), // 40%透明度的蓝色,               
-                StrokeThickness = 2,
-                Layer = AnnotationLayer.BelowSeries
-            };
-
-            poly.Points.Add(tip);
-            poly.Points.Add(p1);
-            poly.Points.Add(p2);
-
-            return poly;
-        }
+       
         #endregion
 
 
@@ -685,7 +475,7 @@ namespace ServoPress.ViewModels
             //数据存储
             EvalWindows.Add(evalWindow);
             //创建NoPass直线标注
-            AddAnnotationToPlot(evalWindow, 1);
+            AddAnnotationToPlot(evalWindow);
             //刷新图表
             PlotModel.InvalidatePlot(true);
 
@@ -719,8 +509,6 @@ namespace ServoPress.ViewModels
             }
         }
 
-
-       
 
         #endregion
     }

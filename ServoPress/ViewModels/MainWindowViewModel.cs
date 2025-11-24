@@ -157,7 +157,7 @@ namespace ServoPress.ViewModels
                     double height = Math.Abs(box.EndY - box.StartY);
 
                     // 1. 分析几何关系
-                    var events = _curveBoxService.AnalyzeCurve(result.CurveData, box.StartX, box.StartY, width, height);
+                    var events = _curveBoxService.AnalyzeCurve(result.CurveData, box);
 
                     // 2. 判定验证
                     var (boxPassed, boxMessage) = _curveBoxService.VerifyBoxResult(box, events);
@@ -170,11 +170,13 @@ namespace ServoPress.ViewModels
                 result.ResultText = sb.ToString().TrimEnd();
                 result.Result = isAllPassed;
 
+                //更新图表
                 stationVM.UpdateWithNewData(result);
                 Task.Run(() =>
                 {
                     try
                     {
+                        //数据库存储
                          _storageService.SaveResultAsync(result);
                     }
                     catch (Exception ex)

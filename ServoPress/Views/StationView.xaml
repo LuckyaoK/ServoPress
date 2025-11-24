@@ -168,17 +168,17 @@
                                 Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10">
 
                                 <Button Content="添加Box" Margin="5" 
-                                    Height="28" Padding="15,0" FontSize="16"
+                                    Height="38" Padding="15,0" FontSize="16"
                                     Style="{StaticResource StartButtonStyle}" 
                                     Command="{Binding DataContext.AddUniBoxCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
 
                                 <Button Content="删除Box" Margin="5" 
-                                    Height="28" Padding="15,0" FontSize="16"
+                                    Height="38" Padding="15,0" FontSize="16"
                                     Style="{StaticResource StopButtonStyle}" 
                                     Command="{Binding DataContext.RemoveUniBoxCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
 
                                 <Button Content="保存配置" Margin="5" 
-                                    Height="28" Padding="15,0" FontSize="16"
+                                    Height="38" Padding="15,0" FontSize="16"
                                     Command="{Binding DataContext.SaveConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </StackPanel>
 
@@ -220,17 +220,17 @@
                                 Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30">
 
                                 <Button Content="添加Box" Margin="5" 
-                                    Height="28" Padding="15,0" FontSize="16"
+                                    Height="38" Padding="15,0" FontSize="16"
                                     Style="{StaticResource StartButtonStyle}" 
                                     Command="{Binding DataContext.AddNoPassCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
 
                                 <Button Content="删除Box" Margin="5" 
-                                    Height="28" Padding="15,0" FontSize="16"
+                                    Height="38" Padding="15,0" FontSize="16"
                                     Style="{StaticResource StopButtonStyle}" 
                                     Command="{Binding DataContext.RemoveNoPassCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
 
                                 <Button Content="保存配置" Margin="5" 
-                                    Height="28" Padding="15,0" FontSize="16"
+                                    Height="38" Padding="15,0" FontSize="16"
                                     Command="{Binding DataContext.SaveConfigCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                             </StackPanel>
 
