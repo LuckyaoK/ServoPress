@@ -21,16 +21,16 @@
         <Border Grid.Row="0" Background="#FFFAFAFA" BorderBrush="#FFD0D0D0" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="开始时间:" VerticalAlignment="Center" Margin="5"/>
-                <DatePicker Margin="5"/>
+                <DatePicker Margin="5" SelectedDateFormat="Long"/>
                 <TextBlock Text="结束时间:" VerticalAlignment="Center" Margin="15,5,5,5"/>
-                <DatePicker Margin="5"/>
-                <TextBlock Text="程序号:" VerticalAlignment="Center" Margin="15,5,5,5"/>
+                <DatePicker Margin="5" SelectedDateFormat="Long"/>
+                <TextBlock Text="产品型号:" VerticalAlignment="Center" Margin="15,5,5,5"/>
                 <TextBox Width="100" Margin="5"/>
                 <TextBlock Text="结果:" VerticalAlignment="Center" Margin="15,5,5,5"/>
                 <ComboBox Width="100" Margin="5" SelectedIndex="0">
                     <ComboBoxItem Content="全部"/>
                     <ComboBoxItem Content="OK"/>
-                    <ComboBoxItem Content="NOK"/>
+                    <ComboBoxItem Content="NG"/>
                 </ComboBox>
                 <Button Content="查 询" Margin="20,5,5,5"/>
             </StackPanel>

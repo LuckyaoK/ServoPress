@@ -1,4 +1,5 @@
-﻿using OxyPlot.Annotations;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using OxyPlot.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,21 @@ namespace ServoPress.Models
         UniBox,
         NoPass
     }
+    /// <summary>
+    /// 过程值
+    /// </summary>
+    public partial class ProcessValue : ObservableObject
+    {
+        [ObservableProperty]
+        public string _name;
+
+        [ObservableProperty]
+        public string _value;
+
+        [ObservableProperty]
+        public string _unit;
+    }
+
     /// <summary>
     /// 评估窗口
     /// </summary>

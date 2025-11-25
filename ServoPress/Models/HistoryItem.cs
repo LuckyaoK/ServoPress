@@ -22,16 +22,4 @@ namespace ServoPress.Models
         public string Param { get; set; }
     }
 
-    public partial class ProcessValue:ObservableObject
-    {
-        [ObservableProperty]
-        public string _name;
-
-        [ObservableProperty]
-        public string _value;
-
-        [ObservableProperty]
-        public string _unit;
-    }
-
 }

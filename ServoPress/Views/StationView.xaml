@@ -111,9 +111,7 @@
 
                             <TextBlock Text="不合格" Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center" FontSize="14"/>
                             <TextBlock Text="{Binding NokCount}" Grid.Row="1" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14" FontWeight="Bold" Foreground="#FFD9534F"/>
-                            <!-- 
-                                合格率只显示在"合格"行，"不合格"行显示"-"
-                            -->
+                 
                             <TextBlock Text="-" Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14" Foreground="#FFD9534F"/>
 
                             <TextBlock Text="总数" Grid.Row="2" Grid.Column="0" Margin="5" VerticalAlignment="Center" FontSize="14"/>

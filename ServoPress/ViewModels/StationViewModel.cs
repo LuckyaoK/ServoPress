@@ -446,7 +446,6 @@ namespace ServoPress.ViewModels
         }
 
 
-
         [RelayCommand]
         private void SaveConfig()
         {
