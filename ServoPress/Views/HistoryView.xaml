@@ -49,17 +49,24 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
                 <!-- 历史列表 -->
-                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="1*"/>
                 <!-- 选中曲线 -->
             </Grid.ColumnDefinitions>
 
             <GroupBox Grid.Column="0" Header="历史记录">
                 <DataGrid>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="时间" Binding="{Binding Timestamp}" Width="*"/>
-                        <DataGridTextColumn Header="程序号" Binding="{Binding Program}" Width="Auto"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto"/>
+                        <DataGridTextColumn Header="工站号" Binding="{Binding StationId}" Width="Auto"/>
+                        <DataGridTextColumn Header="时间" Binding="{Binding Timestamp}" Width="Auto"/>
                         <DataGridTextColumn Header="结果" Binding="{Binding Result}" Width="Auto"/>
+
+                        <DataGridTextColumn Header="最小位移" Binding="{Binding MinPosition}" Width="Auto"/>
+                        <DataGridTextColumn Header="最大位移" Binding="{Binding MaxPosition}" Width="Auto"/>
+                        <DataGridTextColumn Header="最终位移" Binding="{Binding EndPosition}" Width="Auto"/>
+                        <DataGridTextColumn Header="最小压力" Binding="{Binding MinForce}" Width="Auto"/>
                         <DataGridTextColumn Header="最大压力" Binding="{Binding MaxForce}" Width="Auto"/>
+                        <DataGridTextColumn Header="最终压力" Binding="{Binding EndForce}" Width="Auto"/>
                     </DataGrid.Columns>
                     <!-- 示例数据 -->
                     <DataGrid.ItemsSource>
