@@ -26,6 +26,14 @@
                 <DatePicker Margin="5" SelectedDateFormat="Long"/>
                 <TextBlock Text="产品型号:" VerticalAlignment="Center" Margin="15,5,5,5"/>
                 <TextBox Width="100" Margin="5"/>
+                <TextBlock Text="工站:" VerticalAlignment="Center" Margin="15,5,5,5"/>
+                <ComboBox Width="100" Margin="5" SelectedIndex="0">
+                    <ComboBoxItem Content="全部"/>
+                    <ComboBoxItem Content="1"/>
+                    <ComboBoxItem Content="2"/>
+                    <ComboBoxItem Content="3"/>
+                    <ComboBoxItem Content="4"/>
+                </ComboBox>
                 <TextBlock Text="结果:" VerticalAlignment="Center" Margin="15,5,5,5"/>
                 <ComboBox Width="100" Margin="5" SelectedIndex="0">
                     <ComboBoxItem Content="全部"/>
