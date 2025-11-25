@@ -60,9 +60,5 @@ namespace ServoPress.Models
     {
         public RectangleAnnotation RectangleAnnotation { get; set; }
 
-        /// <summary>
-        /// 直线标注
-        /// </summary>
-        public LineAnnotation LineAnnotation { get; set; }
     }
 }
