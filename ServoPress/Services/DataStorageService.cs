@@ -74,7 +74,7 @@ namespace ServoPress.Services
         }
 
         /// <summary>
-        /// 获取历史记录（用于历史查询界面）
+        /// 简单获取历史记录
         /// </summary>
         public List<ProductionRecord> GetHistory(DateTime start, DateTime end, int? stationId = null)
         {
@@ -90,6 +90,46 @@ namespace ServoPress.Services
 
                 // 按时间倒序，取前1000条防止卡顿
                 return query.OrderByDescending(r => r.Timestamp).Take(1000).ToList();
+            }
+        }
+
+        /// <summary>
+        /// 高级查询历史记录
+        /// </summary>
+        /// <param name="start">开始时间</param>
+        /// <param name="end">结束时间</param>
+        /// <param name="stationIndex">工站索引 (0=全部, 1=1号...)</param>
+        /// <param name="resultIndex">结果索引 (0=全部, 1=OK, 2=NG)</param>
+        /// <param name="keyword">产品型号关键字</param>
+        public List<ProductionRecord> QueryHistory(DateTime start, DateTime end, int stationIndex, int resultIndex, string keyword)
+        {
+            using (var context = new AppDbContext())
+            {
+                // 1. 基础时间过滤
+                var query = context.ProductionRecords
+                    .Where(r => r.Timestamp >= start && r.Timestamp <= end);
+
+                // 2. 工站过滤 (ComboBox索引0为全部，1对应StationId=1)
+                if (stationIndex > 0)
+                {
+                    query = query.Where(r => r.StationId == stationIndex);
+                }
+
+                // 3. 结果过滤 (ComboBox索引0为全部，1=OK, 2=NG)
+                if (resultIndex > 0)
+                {
+                    bool isOk = (resultIndex == 1);
+                    query = query.Where(r => r.ResulEnd == isOk);
+                }
+
+                // 4. 产品型号模糊查询
+                if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    query = query.Where(r => r.ProductModel.Contains(keyword));
+                }
+
+                // 5. 按ID倒序返回，最多500条以保证性能
+                return query.OrderByDescending(r => r.Id).Take(500).ToList();
             }
         }
     }

@@ -186,14 +186,18 @@ namespace ServoPress.ViewModels
                 Position = AxisPosition.Bottom,
                 Title = "位移 (mm)",
                 Minimum = 0,
-                Maximum = 10
+                Maximum = 10,
+                MajorGridlineStyle = LineStyle.Solid,
+                MinorGridlineStyle = LineStyle.Dot
             });
             PlotModel.Axes.Add(new LinearAxis
             {
                 Position = AxisPosition.Left,
                 Title = "压力 (N)",
                 Minimum = 0,
-                Maximum = 50
+                Maximum = 50,
+                MajorGridlineStyle = LineStyle.Solid,
+                MinorGridlineStyle = LineStyle.Dot
             });
 
             _curveSeries = new LineSeries
@@ -203,6 +207,8 @@ namespace ServoPress.ViewModels
                 StrokeThickness = 2
             };
             PlotModel.Series.Add(_curveSeries);
+
+           
         }
 
        

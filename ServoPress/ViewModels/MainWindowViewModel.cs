@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging; // 1. 引入消息
+using CommunityToolkit.Mvvm.Messaging; 
 using HslCommunication.Profinet.Siemens;
 using ServoPress.Models; 
 using ServoPress.Services;
