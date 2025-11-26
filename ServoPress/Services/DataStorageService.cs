@@ -47,9 +47,9 @@ namespace ServoPress.Services
                     MaxForce = result.MaxForce,
                     EndForce = result.EndForce,
                   
-
                     // 核心：将曲线点列表序列化为 JSON 字符串存储
-                    CurveDataJson = JsonSerializer.Serialize(result.CurveData)
+                    CurveDataJson = JsonSerializer.Serialize(result.CurveData),
+                    EvalWindowsJson = JsonSerializer.Serialize(result.EvalWindow)
                 };
 
                 // 2. 写入数据库

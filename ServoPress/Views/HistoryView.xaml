@@ -49,9 +49,11 @@
                     <ComboBoxItem Content="NG"/>
                 </ComboBox>
 
-                <Button Content="查 询" Margin="20,5,5,5" Command="{Binding SearchCommand}" Width="80"/>
+                <Button Content="🔍 查询" Margin="20,5,5,5" Command="{Binding SearchCommand}" Width="80"/>
 
-                <Button Content="导 出" Margin="20,5,5,5" Command="{Binding ExportCommand}" Width="80"/>
+                <Button Content="📥 导出" Margin="20,5,5,5" Command="{Binding ExportCommand}" Width="80" Background="#28A745"/>
+
+                <!--<Button Content="🗑️ 删除" Margin="20,5,5,5" Command="{Binding ExportCommand}" Width="80" Background="#DC3545"/>-->
             </StackPanel>
         </Border>
 

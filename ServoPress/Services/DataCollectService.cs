@@ -13,31 +13,17 @@ namespace ServoPress.Services
     /// </summary>
     public class DataResult
     {
-        /// <summary>
-        /// 触发的工位 ID (1-4)
-        /// </summary>
-        public int StationId { get; set; }
-        /// <summary>
-        /// 采集到的曲线数据 (位移 vs 压力)
-        /// </summary>
-        public List<DataPoint> CurveData { get; set; }
-
-        /// <summary>
-        /// 过程值
-        /// </summary>
+        public int StationId { get; set; }  // 触发的工位 ID (1-4)
+        public List<DataPoint> CurveData { get; set; } // 采集到的曲线数据 (位移 vs 压力)
         public double MinPosition { get; set; }
         public double MaxPosition { get; set; }
         public double MinForce { get; set; }
         public double MaxForce { get; set; }
         public double EndPosition { get; set; }
         public double EndForce { get; set; }
-
-
-        /// <summary>
-        /// 最终判定结果 (OK, NG, WAIT)
-        /// </summary>
-        public bool Result { get; set; }
-        public string ResultText { get; set; }
+        public bool Result { get; set; } // 最终判定结果
+        public string ResultText { get; set; } = "";//结果判定文本
+        public List<EvalWindow> EvalWindow { get; set; }
 
     }
 

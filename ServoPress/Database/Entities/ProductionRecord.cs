@@ -59,7 +59,7 @@ namespace ServoPress.Database.Entities
         /// 最小压力
         /// </summary>
         public double MinForce { get; set; }
-        /// <summary>
+        /// <summary>L
         /// 最大压力
         /// </summary>
         public double MaxForce { get; set; }
@@ -76,5 +76,10 @@ namespace ServoPress.Database.Entities
         /// 曲线数据;数据库里存字符串，代码里用 JSON 转换
         /// </summary>
         public string CurveDataJson { get; set; }
+
+        /// <summary>
+        /// 评估窗口JSON
+        /// </summary>
+        public string EvalWindowsJson { get; set; }
     }
 }

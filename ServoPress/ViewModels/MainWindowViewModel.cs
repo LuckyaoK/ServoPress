@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json; 
 using System.Text.Json.Serialization; 
 using System.Windows;
+using System.Windows.Media;
 
 namespace ServoPress.ViewModels
 {
@@ -23,23 +24,42 @@ namespace ServoPress.ViewModels
         [NotifyPropertyChangedFor(nameof(IsMaximized))]
         private WindowState _windowState = WindowState.Normal;
 
-   
+
         public bool IsMaximized => WindowState == WindowState.Maximized;
 
         // 2. 绑定到一个附加行为，用于触发窗口关闭
         [ObservableProperty]
         private bool _isCloseRequested;
 
-        // 公开 StationViewModel 供 View 绑定
+        // ViewModel
         [ObservableProperty]
         private StationViewModel _stationVM;
         public ProductionViewModel ProductionVM { get; }
 
+        // 系统状态文本
+        [ObservableProperty]
+        private string _systemStatus = "系统初始化";
+
+        // 系统状态颜色
+        [ObservableProperty]
+        private SolidColorBrush _systemStatusColor = new SolidColorBrush(Colors.Gray);
+
+        //心跳
+        private bool _heartbeat;
+
+        //心跳地址
+        private string _heartbeatAdd => "DB10.2.0";
+
+        //PLC地址
+        private string _s7IPAddress => "127.0.0.1";
+
         // 触发地址
         private readonly string[] _triggerAddresses = { "DB10.15.0", "DB10.16.0", "DB10.17.0", "DB10.18.0", };
 
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private  CancellationTokenSource _cts;
+        private  CancellationTokenSource _systemStatusCts;
 
+        //服务
         private DataCollectService _dataCollectService;
         private PlcCommunicationService _plcService;
         private readonly CurveBoxService _curveBoxService;
@@ -49,7 +69,7 @@ namespace ServoPress.ViewModels
         {
             // 1. 初始化基础服务
             _curveBoxService = new CurveBoxService();
-            _plcService = new PlcCommunicationService("127.0.0.1");
+            _plcService = new PlcCommunicationService(_s7IPAddress);
             _dataCollectService = new DataCollectService();
             _storageService = new DataStorageService();
             _storageService.InitializeDatabase();
@@ -71,18 +91,74 @@ namespace ServoPress.ViewModels
                 _curveBoxService.SaveConfig();
             });
 
-
             //5. 订阅数据采集完成事件
             _dataCollectService.OnDataCollect += OnDataCollectHandler;
 
-            //6. 开启后台监听线程
-            StartPLCListen();
+            //6. 开启系统状态监听线程
+            StartSystemMonitor();
+
+            //7. 开启后台监听线程
+            StartPLCLMonitor();
+
+            LogService.Info("应用程序启动");
+        }
+
+        private void StartSystemMonitor()
+        {
+            _systemStatusCts = new CancellationTokenSource();
+
+            // 在后台线程运行，以免阻塞 UI
+            Task.Run(() =>
+            {
+
+                while (!_systemStatusCts.Token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        // 初始连接
+                        bool IsPlcConnected = _plcService.ConnectAsync();
+                        //监听心跳
+                        _heartbeat = _plcService.ReadBool(_heartbeatAdd).Content;
+                        if (IsPlcConnected && _heartbeat)
+                        {
+                             _plcService.WriteBool(_heartbeatAdd, false);
+                        }
+
+                        App.Current.Dispatcher.Invoke(() =>
+                        {
+                            if (IsPlcConnected)
+                            {
+                                SystemStatus = "运行中";
+                                SystemStatusColor = new SolidColorBrush(Colors.LimeGreen);
+                            }
+                            else
+                            {
+                            
+                                SystemStatus = "PLC连接失败";
+                                SystemStatusColor = new SolidColorBrush(Colors.Red);
+                            }
+                        });
+
+                    }
+                    catch (Exception ex)
+                    {
+                       Debug.WriteLine($"监听错误: {ex.Message}");
+                    }
+                    
+                   Thread.Sleep(500);
+                }
+            }, _systemStatusCts.Token);
         }
 
 
-        public void StartPLCListen()
+        public void StartPLCLMonitor()
         {
+            _cts = new CancellationTokenSource();
             Task.Run(() => PollingLoop(_cts.Token));
+        }
+        public void StopPLCMonitor()
+        {
+            _cts?.Cancel();
         }
 
 
@@ -153,9 +229,6 @@ namespace ServoPress.ViewModels
 
                 foreach (var box in windows)
                 {
-                    double width = Math.Abs(box.EndX - box.StartX);
-                    double height = Math.Abs(box.EndY - box.StartY);
-
                     // 1. 分析几何关系
                     var events = _curveBoxService.AnalyzeCurve(result.CurveData, box);
 
@@ -167,6 +240,7 @@ namespace ServoPress.ViewModels
                     sb.AppendLine($"[{box.Name}]: {boxMessage}");
                 }
 
+                result.EvalWindow = windows;
                 result.ResultText = sb.ToString().TrimEnd();
                 result.Result = isAllPassed;
 
@@ -220,6 +294,7 @@ namespace ServoPress.ViewModels
         {
             // 触发附加行为
             IsCloseRequested = true;
+            LogService.Info("应用程序关闭");
         }
     }
 

@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="NLog.config" />
     <None Remove="Resources\Icons\HomePosition.svg" />
     <None Remove="Resources\Icons\Jump.svg" />
     <None Remove="Resources\Icons\Label.svg" />
@@ -27,12 +28,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.36" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="NLog" Version="5.0.0" />
     <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.3" />
   </ItemGroup>

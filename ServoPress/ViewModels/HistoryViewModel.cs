@@ -2,9 +2,11 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using OxyPlot;
+using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using ServoPress.Database.Entities;
+using ServoPress.Models;
 using ServoPress.Services;
 using System;
 using System.Collections.ObjectModel;
@@ -144,8 +146,6 @@ namespace ServoPress.ViewModels
         }
 
 
-
-
         // --- 辅助方法 ---
 
         private void InitPlotModel()
@@ -181,17 +181,94 @@ namespace ServoPress.ViewModels
                 }
 
                 model.Series.Add(series);
+
+                List<EvalWindow> evalWindows = JsonSerializer.Deserialize<List<EvalWindow>>(record.EvalWindowsJson);
+                foreach(var window in evalWindows)
+                {
+                    AddAnnotationToPlot(window, model);
+                }
+
                 CurveModel = model; // 更新属性，通知界面重绘
             }
-            catch
+            catch(Exception ex) 
             {
-                // 解析失败处理
+                MessageBox.Show($"曲线加载失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        /// <summary>
+        /// 创建评估窗口
+        /// </summary>
+        /// <param name="window"></param>
+        private void AddAnnotationToPlot(EvalWindow window, PlotModel plotModel)
+        {
+            CurveBoxService _curveBoxService = new CurveBoxService();
+            // 创建矩形
+            var rect = new RectangleAnnotation
+            {
+                MinimumX = window.StartX,
+                MaximumX = window.EndX,
+                MinimumY = window.StartY,
+                MaximumY = window.EndY,
+                Fill = OxyColor.FromArgb(0x40, 0x00, 0xFF, 0x00),
+                Stroke = OxyColors.Green,
+                StrokeThickness = 1,
+                Text = window.Name,
+                TextPosition = new DataPoint((window.StartX + window.EndX) / 2, window.EndY + Math.Abs(window.StartY - window.EndY) * 0.15)
+            };
+            plotModel.Annotations.Add(rect);
+
+            BoxSide inBoxSide = new BoxSide();
+            switch (window.EntryDirection)
+            {
+                case "上进":
+                    inBoxSide = BoxSide.Top; break;
+                case "下进":
+                    inBoxSide = BoxSide.Bottom; break;
+                case "左进":
+                    inBoxSide = BoxSide.Left; break;
+                case "右进":
+                    inBoxSide = BoxSide.Right; break;
+                default:
+                    inBoxSide = BoxSide.None; break;
+            }
+
+            BoxSide outBoxSide = new BoxSide();
+            switch (window.ExitDirection)
+            {
+                case "上出":
+                    outBoxSide = BoxSide.Top; break;
+                case "下出":
+                    outBoxSide = BoxSide.Bottom; break;
+                case "左出":
+                    outBoxSide = BoxSide.Left; break;
+                case "右出":
+                    outBoxSide = BoxSide.Right; break;
+                default:
+                    outBoxSide = BoxSide.None; break;
+            }
+
+            PolygonAnnotation triangleAnnotation1 = new PolygonAnnotation();
+            //进入
+            if (inBoxSide != BoxSide.None)
+            {
+                triangleAnnotation1 = _curveBoxService.CreatePoly(true, inBoxSide, triangleAnnotation1, window.StartX, window.EndX, window.StartY, window.EndY);
+                plotModel.Annotations.Add(triangleAnnotation1);
+            }
+
+            PolygonAnnotation triangleAnnotation2 = new PolygonAnnotation();
+            //退出
+            if (outBoxSide != BoxSide.None)
+            {
+                triangleAnnotation2 = _curveBoxService.CreatePoly(false, outBoxSide, triangleAnnotation2, window.StartX, window.EndX, window.StartY, window.EndY);
+                plotModel.Annotations.Add(triangleAnnotation2);
+            }
+
         }
     }
 
 
-    // 1. 定义一个可读写的中间类
+    // 1. 定义一个用于反序列化的类
     public class JsonDataPoint
     {
         public double X { get; set; } 
