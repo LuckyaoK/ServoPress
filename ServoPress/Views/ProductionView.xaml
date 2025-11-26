@@ -14,7 +14,6 @@
     已修改为 4 工位布局
     -->
 
-
     <Grid Margin="5">
         <ItemsControl ItemsSource="{Binding Stations}">
 

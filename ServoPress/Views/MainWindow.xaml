@@ -142,32 +142,33 @@
                             </Style>
                         </ListBox.Resources>
 
-                        <!-- 
-                          ListBoxItems (已修改)
-                          已移除 TextBlock 上的 'Foreground=...' 绑定, 
-                          因为上面的 Style 已经处理了。
-                        -->
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
-                                <svgc:SvgViewbox Source="/Resources/Icons/Home.svg" Style="{StaticResource NavIconStyle}"/>
+                                <svgc:SvgViewbox Style="{StaticResource NavIconStyle}"/>
                                 <TextBlock Text="🏭 实时生产" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
-                                <svgc:SvgViewbox Source="/Resources/Icons/Settings.svg" Style="{StaticResource NavIconStyle}"/>
+                                <svgc:SvgViewbox Style="{StaticResource NavIconStyle}"/>
                                 <TextBlock Text="⚙️ 参数设置" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
-                                <svgc:SvgViewbox Source="/Resources/Icons/History.svg" Style="{StaticResource NavIconStyle}"/>
+                                  <svgc:SvgViewbox Style="{StaticResource NavIconStyle}"/>
+                                <TextBlock Text="📜序列编辑" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem>
+                            <StackPanel Orientation="Horizontal">
+                                <svgc:SvgViewbox Style="{StaticResource NavIconStyle}"/>
                                 <TextBlock Text="📈 历史数据" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
-                                <svgc:SvgViewbox Source="/Resources/Icons/Admin.svg" Style="{StaticResource NavIconStyle}"/>
+                                <svgc:SvgViewbox Style="{StaticResource NavIconStyle}"/>
                                 <TextBlock Text="🛠️ 系统管理" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
@@ -196,6 +197,12 @@
                 <TabItem Header="参数设置">
                     <views:SettingsView />
                 </TabItem>
+
+
+                <TabItem Header="序列编辑">
+                    <views:SequenceEditorView />
+                </TabItem>
+
 
                 <TabItem Header="历史数据">
                     <views:HistoryView />

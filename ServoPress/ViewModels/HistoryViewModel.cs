@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -7,6 +8,8 @@ using ServoPress.Database.Entities;
 using ServoPress.Services;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Windows;
 
@@ -80,6 +83,56 @@ namespace ServoPress.ViewModels
             }
         }
 
+
+        /// <summary>
+        /// 导出
+        /// </summary>
+        [RelayCommand]
+        public void Export()
+        {
+            if (HistoryRecords == null || HistoryRecords.Count == 0)
+            {
+                MessageBox.Show("当前列表中没有数据可导出，请先进行查询。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "CSV 文件 (*.csv)|*.csv",
+                FileName = $"History_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
+                Title = "导出历史数据"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var sb = new StringBuilder();
+
+                    // 写入表头
+                    sb.AppendLine("ID,序列号,工站,产品型号,时间,结果,判定," +
+                        "最大压力(N),最小压力(N),最终压力(N),最大位移(mm),最小位移(mm),最终位移(mm),测试点");
+
+                    // 写入数据行
+                    foreach (var item in HistoryRecords)
+                    {
+                        string res = item.ResulEnd ? "OK" : "NG";
+                        sb.AppendLine($"{item.Id},{item.SerialNumber},{item.StationId},{item.ProductModel},{item.Timestamp:yyyy-MM-dd HH:mm:ss},{res}" +
+                        $"{item.MaxForce},{item.MinForce},{item.EndForce},{item.MaxPosition},{item.MinPosition},{item.EndPosition},{item.CurveDataJson}");
+                    }
+
+                    // 使用 UTF8 编码写入文件 (带BOM，以便Excel正确识别中文)
+                    File.WriteAllText(saveFileDialog.FileName, sb.ToString(), Encoding.UTF8);
+
+                    MessageBox.Show("导出成功！", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"导出失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
         /// <summary>
         /// 双击表格行命令
         /// </summary>
@@ -89,6 +142,9 @@ namespace ServoPress.ViewModels
             if (record == null) return;
             UpdateChart(record);
         }
+
+
+
 
         // --- 辅助方法 ---
 

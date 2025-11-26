@@ -1,13 +1,7 @@
-﻿using OxyPlot;
-using ServoPress.Database;
+﻿using ServoPress.Database;
 using ServoPress.Database.Entities;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
-
 namespace ServoPress.Services
 {
     /// <summary>
