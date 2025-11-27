@@ -41,7 +41,7 @@ namespace ServoPress.ViewModels
         private DateTime _endDate;
 
         [ObservableProperty]
-        private string _productModelKeyword;
+        private string _productTypeKeyword;
 
         [ObservableProperty]
         private int _selectedStationIndex = 0; // 0=全部
@@ -71,7 +71,7 @@ namespace ServoPress.ViewModels
             {
                 DateTime searchStart = StartDate.Date;
                 DateTime searchEnd = EndDate.Date.AddDays(1).AddSeconds(-1);
-                var list = _dataService.QueryHistory(searchStart, searchEnd, SelectedStationIndex, SelectedResultIndex, ProductModelKeyword);
+                var list = _dataService.QueryHistory(searchStart, searchEnd, SelectedStationIndex, SelectedResultIndex, ProductTypeKeyword);
                 HistoryRecords = new ObservableCollection<ProductionRecord>(list);
 
                 if (list.Count == 0)
@@ -101,7 +101,7 @@ namespace ServoPress.ViewModels
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 Filter = "CSV 文件 (*.csv)|*.csv",
-                FileName = $"History_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
+                FileName = $"历史生产数据.csv",
                 Title = "导出历史数据"
             };
 
@@ -112,15 +112,17 @@ namespace ServoPress.ViewModels
                     var sb = new StringBuilder();
 
                     // 写入表头
-                    sb.AppendLine("ID,序列号,工站,产品型号,时间,结果,判定," +
+                    sb.AppendLine("ID,工站,产品型号,序列号," +
+                        "时间,结果,判定," +
                         "最大压力(N),最小压力(N),最终压力(N),最大位移(mm),最小位移(mm),最终位移(mm),测试点");
 
                     // 写入数据行
                     foreach (var item in HistoryRecords)
                     {
                         string res = item.ResulEnd ? "OK" : "NG";
-                        sb.AppendLine($"{item.Id},{item.SerialNumber},{item.StationId},{item.ProductModel},{item.Timestamp:yyyy-MM-dd HH:mm:ss},{res}" +
-                        $"{item.MaxForce},{item.MinForce},{item.EndForce},{item.MaxPosition},{item.MinPosition},{item.EndPosition},{item.CurveDataJson}");
+                        sb.AppendLine($"{item.Id},{item.StationId},{item.ProductType},{item.SerialNumber}," +
+                        $"{item.Timestamp:yyyy-MM-dd HH:mm:ss},{res},{item.ResultText.Replace(",", "，").Replace("\r", "").Replace("\n", " ")}," +
+                        $"{item.MaxForce},{item.MinForce},{item.EndForce},{item.MaxPosition},{item.MinPosition},{item.EndPosition},{item.CurveDataJson.Replace(",", "，").Replace("\r", "").Replace("\n", " ")}");
                     }
 
                     // 使用 UTF8 编码写入文件 (带BOM，以便Excel正确识别中文)
@@ -165,7 +167,7 @@ namespace ServoPress.ViewModels
                 // 反序列化
                 var points = JsonSerializer.Deserialize<List<JsonDataPoint>>(record.CurveDataJson);
                 var curveData = points.Select(p => new DataPoint(p.X, p.Y)).ToList();
-                var model = new PlotModel { Title = $"曲线 - {record.Id}"};
+                var model = new PlotModel { Title = $"曲线 - {record.SerialNumber}"};
                 model.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom, Title = "位移 (mm)", MajorGridlineStyle = LineStyle.Solid, MinorGridlineStyle = LineStyle.Dot });
                 model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Title = "压力 (N)", MajorGridlineStyle = LineStyle.Solid, MinorGridlineStyle = LineStyle.Dot });
 

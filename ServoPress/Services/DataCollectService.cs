@@ -1,4 +1,6 @@
-﻿using OxyPlot;
+﻿using NLog.Fluent;
+using OxyPlot;
+using ServoPress.Database;
 using ServoPress.Models;
 using System;
 using System.Collections.Concurrent;
@@ -9,11 +11,12 @@ using System.Threading.Tasks;
 namespace ServoPress.Services
 {
     /// <summary>
-    /// 数据采集服务类
+    /// 数据结果类
     /// </summary>
     public class DataResult
     {
         public int StationId { get; set; }  // 触发的工位 ID (1-4)
+        public string ProductType { get; set; } = "Y29";
         public List<DataPoint> CurveData { get; set; } // 采集到的曲线数据 (位移 vs 压力)
         public double MinPosition { get; set; }
         public double MaxPosition { get; set; }
@@ -24,6 +27,66 @@ namespace ServoPress.Services
         public bool Result { get; set; } // 最终判定结果
         public string ResultText { get; set; } = "";//结果判定文本
         public List<EvalWindow> EvalWindow { get; set; }
+
+
+
+        /// <summary>
+        /// 生成序列号
+        /// 格式：产品类型(N位) + 工位ID(2位) + 日期(8位) + 流水号(5位)
+        /// 示例：Y29012025112700001
+        /// </summary>
+        /// <returns>完整的序列号</returns>
+        public string GenerateSerialNumber()
+        {
+            try
+            {
+                using (var context = new AppDbContext())
+                {
+                    // 1. 获取当前日期格式
+                    string dateStr = DateTime.Now.ToString("yyyyMMdd");
+
+                    // 2. 拼接前缀 (用于在数据库中模糊查询) 
+                    string prefix = $"{ProductType}{StationId:D2}{dateStr}";
+
+                    // 3. 查询数据库中，今天生成的最后一个包含该前缀的序列号
+                    var lastRecord = context.ProductionRecords
+                        .Where(r => r.SerialNumber != null && r.SerialNumber.StartsWith(prefix))
+                        .OrderByDescending(r => r.SerialNumber)
+                        .FirstOrDefault();
+
+                    int currentSequence = 0;
+
+                    if (lastRecord != null)
+                    {
+                        // 4. 解析已有序号的最后5位
+                        string snStr = lastRecord.SerialNumber;
+                        if (snStr.Length >= 5)
+                        {
+                            string seqPart = snStr.Substring(snStr.Length - 5);
+                            int.TryParse(seqPart, out currentSequence);
+                        }
+                    }
+
+                    // 5. 序号 + 1
+                    int nextSequence = currentSequence + 1;
+
+                    // 6. 格式化为5位字符串 (00001)
+                    string sequenceStr = nextSequence.ToString("D5");
+
+                    // 7. 组合最终结果
+                    string fullSerialNumber = $"{prefix}{sequenceStr}";
+
+                    LogService.Info($"生成新序列号: {fullSerialNumber}");
+                    return fullSerialNumber;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex, "生成序列号失败");
+                return "";
+             
+            }
+        }
 
     }
 

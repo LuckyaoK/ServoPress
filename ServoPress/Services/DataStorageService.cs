@@ -22,7 +22,7 @@ namespace ServoPress.Services
         }
 
         /// <summary>
-        /// 异步保存测试结果
+        /// 保存测试结果
         /// </summary>
         public  void SaveResultAsync(DataResult result)
         {
@@ -33,8 +33,8 @@ namespace ServoPress.Services
                 {
                     StationId = result.StationId,
                     StationName = $"工位-{result.StationId}",
-                    ProductModel = "test",
-                    SerialNumber = DateTime.Now.ToString("yyyyMMddHHmmss"), // 模拟序列号
+                    ProductType =result.ProductType,
+                    SerialNumber = result.GenerateSerialNumber(), 
                     Timestamp = DateTime.Now,
 
                     ResulEnd = result.Result,
@@ -119,7 +119,7 @@ namespace ServoPress.Services
                 // 4. 产品型号模糊查询
                 if (!string.IsNullOrWhiteSpace(keyword))
                 {
-                    query = query.Where(r => r.ProductModel.Contains(keyword));
+                    query = query.Where(r => r.ProductType.Contains(keyword));
                 }
 
                 // 5. 按ID倒序返回，最多500条以保证性能

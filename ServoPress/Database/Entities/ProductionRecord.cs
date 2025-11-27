@@ -34,7 +34,7 @@ namespace ServoPress.Database.Entities
         /// <summary>
         /// 产品型号
         /// </summary>
-        public string ProductModel { get; set; } 
+        public string ProductType { get; set; } 
         /// <summary>
         /// 时间
         /// </summary>

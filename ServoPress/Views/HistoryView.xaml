@@ -31,7 +31,7 @@
                 <DatePicker Margin="5" SelectedDateFormat="Long" SelectedDate="{Binding EndDate}"/>
 
                 <TextBlock Text="产品型号:" VerticalAlignment="Center" Margin="15,5,5,5"/>
-                <TextBox Width="100" Margin="5" Text="{Binding ProductModelKeyword}"/>
+                <TextBox Width="100" Margin="5" Text="{Binding ProductTypeKeyword}"/>
 
                 <TextBlock Text="工站:" VerticalAlignment="Center" Margin="15,5,5,5"/>
                 <ComboBox Width="100" Margin="5" SelectedIndex="{Binding SelectedStationIndex}">
@@ -79,7 +79,8 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                         <DataGridTextColumn Header="工站" Binding="{Binding StationId}" Width="40" />
-                        <DataGridTextColumn Header="产品型号" Binding="{Binding ProductModel}" Width="70"/>
+                        <DataGridTextColumn Header="产品型号" Binding="{Binding ProductType}" Width="70"/>
+                        <DataGridTextColumn Header="序列号" Binding="{Binding SerialNumber}" Width="150"/>
                         <DataGridTextColumn Header="时间" Binding="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}" Width="160"/>
                         <DataGridTextColumn Header="结果" Binding="{Binding ResulEnd,Converter={StaticResource BoolToResultConverter}}" Width="45"/>
                         <DataGridTextColumn Header="判定" Binding="{Binding ResultText}" Width="200"/>
