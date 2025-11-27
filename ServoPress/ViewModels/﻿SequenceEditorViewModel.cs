@@ -63,18 +63,25 @@ namespace ServoPress.ViewModels
 
         private bool CanExcute() => SelectedStep != null && SequenceSteps.IndexOf(SelectedStep) > 0;
 
+        /// <summary>
+        /// 上移
+        /// </summary>
         [RelayCommand(CanExecute = "CanExcute")]
         private void MoveStepUp()
         {
             if (SelectedStep == null) return;
             int index = SequenceSteps.IndexOf(SelectedStep);
-            if (index > 0)
+            if (index > 1)
             {
                 SequenceSteps.Move(index, index - 1);
                 RenumberSteps();
             }
         }
 
+
+        /// <summary>
+        /// 下移
+        /// </summary>
         [RelayCommand(CanExecute = "CanExcute")]
         private void MoveStepDown()
         {
