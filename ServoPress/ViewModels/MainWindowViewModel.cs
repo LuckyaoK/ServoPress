@@ -262,20 +262,14 @@ namespace ServoPress.ViewModels
                 result.ResultText = sb.ToString().TrimEnd();
                 result.Result = isAllPassed;
 
-                //更新图表
-                stationVM.UpdateWithNewData(result);
-                Task.Run(() =>
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    try
-                    {
-                        //数据库存储
-                         _storageService.SaveResultAsync(result);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogService.Error($"[DB Error] {ex.Message}");
-                    }
+                    //更新图表
+                    stationVM.UpdateWithNewData(result);
                 });
+
+                //数据库存储
+                _storageService.SaveResultAsync(result);
             }
             catch (Exception ex)
             {

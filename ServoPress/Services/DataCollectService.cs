@@ -102,13 +102,13 @@ namespace ServoPress.Services
         public event Action<DataResult> OnDataCollect;
 
         private readonly ConcurrentDictionary<int, byte> _busyStations = new ConcurrentDictionary<int, byte>();
-        /// <summary>
-        /// 外部 (PlcService) 调用此方法来启动一次采集
-        /// </summary>
+
         public async Task TriggerCollectAsync(int stationId)
         {
             // 尝试将该工位标记为忙碌
             // TryAdd 是原子操作：如果添加成功返回 true（抢到锁了）；如果已存在返回 false（正在忙）
+            // finally 里的await Task.Delay(1000) 的作用是“霸占着锁不放”。它强行延长了任务的生命周期，让锁多存在一会儿。
+            //_busyStations 的作用是“检查锁是否存在”。
             if (!_busyStations.TryAdd(stationId, 0))
             {
                 LogService.Info($"[DataAcquisition] 工位 {stationId} 正在采集中，忽略本次触发。");
@@ -129,9 +129,10 @@ namespace ServoPress.Services
             {
                 // 延时等待PLC信号复位，防止重复触发
                 await Task.Delay(1000);
+                LogService.Info($"[DataAcquisitionService] 工位 {stationId} 采集成功");
                 // 采集完成，移除该工位的忙碌状态，释放锁
                 _busyStations.TryRemove(stationId, out _);
-              
+ 
             }
         }
 
