@@ -5,20 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:ServoPress.Views"
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
-        
         xmlns:viewmodels="clr-namespace:ServoPress.ViewModels"
         xmlns:behaviors="clr-namespace:ServoPress.Behaviors"
-        
         mc:Ignorable="d"
         Height="1000" Width="1500"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" AllowsTransparency="True" BorderThickness="1" 
         BorderBrush="{StaticResource BorderBrush}"
         Background="White"
-        
         behaviors:WindowBehavior.CloseWindowTrigger="{Binding IsCloseRequested}"
         WindowState="{Binding WindowState, Mode=TwoWay}">
-
     <Window.DataContext>
         <viewmodels:MainWindowViewModel/>
     </Window.DataContext>
@@ -52,7 +48,6 @@
                 </Style.Triggers>
             </Style>
         </Grid.Style>
-
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -101,10 +96,11 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- 2.1. 左侧导航栏 (已修改) -->
-            <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
-                <DockPanel>
-                    <!-- (设备状态模块 ... 保持不变) -->
+            <!-- 2.1. 左侧导航栏 -->
+            <Border Grid.Column="0" Width="220" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                <!-- 使用 DockPanel 并设置 LastChildFill="True" 确保 ListBox 填充剩余空间 -->
+                <DockPanel LastChildFill="True">
+                    <!-- Top: 设备状态模块 -->
                     <Border DockPanel.Dock="Top" Background="{StaticResource AccentBrush}" Margin="10" CornerRadius="4" Padding="15">
                         <StackPanel>
                             <TextBlock Text="设备状态:" FontSize="14" Style="{StaticResource TopBarLabelStyle}"/>
@@ -113,30 +109,53 @@
                             <TextBlock Text="Y29" FontSize="16" FontWeight="Bold" Style="{StaticResource TopBarTextStyle}"/>
                         </StackPanel>
                     </Border>
+                    <!-- 
+                       Bottom: 日志区域
+                    -->
+                    <Border DockPanel.Dock="Bottom" 
+                            Height="500" 
+                            Margin="0" 
+                            Background="#FAFAFA" 
+                            BorderBrush="#EAEAEA" 
+                            BorderThickness="0,1,0,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- 小标题 -->
+                            <Border Grid.Row="0" Background="#F0F0F0" BorderBrush="#EAEAEA" BorderThickness="0,0,0,1" Padding="8,5">
+                                <TextBlock Text="系统日志" 
+                                           FontSize="14" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="#555"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+
+                            <!-- 日志内容 -->
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" Margin="2">
+                                <TextBlock Text="{Binding LogContent}" 
+                                           TextWrapping="Wrap" 
+                                           FontSize="12" 
+                                           FontFamily="Consolas, Microsoft YaHei" 
+                                           Foreground="#333"
+                                           LineHeight="16"/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
 
                     <!-- 
-                      导航列表 (已修改)
-                      我们在这里添加一个局部的 TextBlock 样式
+                       Fill: 导航列表 自动填充剩余空间
                     -->
                     <ListBox x:Name="NavListBox"
-                             DockPanel.Dock="Top"
                              BorderThickness="0"
                              Background="Transparent"
-                             Width="220"
                              ItemContainerStyle="{StaticResource NavButtonStyle}"
                              SelectedIndex="0">
-
-                        <!-- 
-                          新增: 局部资源
-                          此样式会覆盖 App.xaml 中的全局 TextBlock 样式, 
-                          但 *仅* 限于此 ListBox 内部。
-                        -->
                         <ListBox.Resources>
                             <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                                <!-- 
-                                  强制 TextBlock 的字体颜色 
-                                  绑定到其父 ListBoxItem 的字体颜色
-                                -->
                                 <Setter Property="Foreground" 
                                         Value="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
                             </Style>
@@ -156,7 +175,7 @@
                         </ListBoxItem>
                         <ListBoxItem>
                             <StackPanel Orientation="Horizontal">
-                                  <svgc:SvgViewbox Style="{StaticResource NavIconStyle}"/>
+                                <svgc:SvgViewbox Style="{StaticResource NavIconStyle}"/>
                                 <TextBlock Text="📜序列编辑" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ListBoxItem>
@@ -198,11 +217,9 @@
                     <views:SettingsView />
                 </TabItem>
 
-
                 <TabItem Header="序列编辑">
                     <views:SequenceEditorView />
                 </TabItem>
-
 
                 <TabItem Header="历史数据">
                     <views:HistoryView />

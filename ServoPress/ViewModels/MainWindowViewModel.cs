@@ -24,7 +24,6 @@ namespace ServoPress.ViewModels
         [NotifyPropertyChangedFor(nameof(IsMaximized))]
         private WindowState _windowState = WindowState.Normal;
 
-
         public bool IsMaximized => WindowState == WindowState.Maximized;
 
         // 2. 绑定到一个附加行为，用于触发窗口关闭
@@ -43,6 +42,16 @@ namespace ServoPress.ViewModels
         // 系统状态颜色
         [ObservableProperty]
         private SolidColorBrush _systemStatusColor = new SolidColorBrush(Colors.Gray);
+
+        // 日志内容
+        [ObservableProperty]
+        private string _logContent = "";
+
+        // 日志队列，用于精确管理行数
+        private readonly Queue<string> _logQueue = new Queue<string>();
+
+        // 最大日志行数限制
+        private const int MaxLogLines = 300;
 
         //心跳
         private bool _heartbeat;
@@ -100,6 +109,9 @@ namespace ServoPress.ViewModels
             //7. 开启后台监听线程
             StartPLCLMonitor();
 
+            // 8. 订阅日志事件
+            LogService.OnNewLog += OnNewLogReceived;
+
             LogService.Info("应用程序启动");
         }
 
@@ -110,7 +122,6 @@ namespace ServoPress.ViewModels
             // 在后台线程运行，以免阻塞 UI
             Task.Run(() =>
             {
-
                 while (!_systemStatusCts.Token.IsCancellationRequested)
                 {
                     try
@@ -142,7 +153,7 @@ namespace ServoPress.ViewModels
                     }
                     catch (Exception ex)
                     {
-                       Debug.WriteLine($"监听错误: {ex.Message}");
+                       LogService.Error($"监听错误: {ex.Message}");
                     }
                     
                    Thread.Sleep(500);
@@ -150,17 +161,29 @@ namespace ServoPress.ViewModels
             }, _systemStatusCts.Token);
         }
 
-
         public void StartPLCLMonitor()
         {
             _cts = new CancellationTokenSource();
             Task.Run(() => PollingLoop(_cts.Token));
         }
+
         public void StopPLCMonitor()
         {
             _cts?.Cancel();
         }
 
+
+        private void OnNewLogReceived(string message)
+        {
+            _logQueue.Enqueue(message);
+
+            while (_logQueue.Count > MaxLogLines)
+            {
+                _logQueue.Dequeue();
+            }
+
+            LogContent = string.Join(Environment.NewLine, _logQueue);
+        }
 
         /// <summary>
         /// PLC后台监听轮询循环
@@ -180,7 +203,7 @@ namespace ServoPress.ViewModels
                         var readResult =  _plcService.ReadBool(address);
                         if (!readResult.IsSuccess)
                         {
-                            Debug.WriteLine($"[PLC Polling] 读取 {address} 失败: {readResult.Message}");
+                            LogService.Error($"[PLC Polling] 读取 {address} 失败: {readResult.Message}");
                             await Task.Delay(5000, token); // 发生错误时，等待5秒
                             break; // 退出 for 循环(会触发重连)
                         }
@@ -188,7 +211,7 @@ namespace ServoPress.ViewModels
                         if (readResult.Content == true)
                         {
                             int stationId = i + 1;
-                            Debug.WriteLine($"[PLC Polling] 检测到工位 {stationId} 触发");
+                            LogService.Info($"[PLC Polling] 检测到工位 {stationId} 触发");
                             _ =_dataCollectService.TriggerCollectAsync(stationId);
                         }
 
@@ -203,12 +226,12 @@ namespace ServoPress.ViewModels
                 catch (Exception ex)
                 {
                     // 捕获任务取消等异常
-                    Debug.WriteLine($"[PlcService] 轮询循环出错: {ex.Message}");
+                    LogService.Info($"[PlcService] 轮询循环出错: {ex.Message}");
                     if (ex is TaskCanceledException) break;
                     await Task.Delay(1000, token);
                 }
             }
-            Debug.WriteLine("[PlcService] 轮询已停止。");
+            LogService.Info("[PlcService] 轮询已停止。");
         }
 
         /// <summary>
@@ -255,17 +278,18 @@ namespace ServoPress.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"[DB Error] {ex.Message}");
+                        LogService.Error($"[DB Error] {ex.Message}");
                     }
                 });
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[MainWindowViewModel] 更新 UI 失败: {ex.Message}");
+                LogService.Error($"[MainWindowViewModel] 更新 UI 失败: {ex.Message}");
             }
         }
 
-       
+
+        #region 窗口化处理
         /// <summary>
         /// 最小化窗口
         /// </summary>
@@ -296,9 +320,10 @@ namespace ServoPress.ViewModels
             IsCloseRequested = true;
             LogService.Info("应用程序关闭");
         }
+        #endregion
     }
 
-   
+
     /// <summary>
     /// 一个空消息，用于从 StationVM 触发 MainWindowVM 的保存操作
     /// </summary>

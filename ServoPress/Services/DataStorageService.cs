@@ -59,11 +59,11 @@ namespace ServoPress.Services
                     context.SaveChanges();
                 }
 
-                Debug.WriteLine($"[DataStorage] 工位 {result.StationId} 数据保存成功。ID: {record.Id}");
+                LogService.Info($"[DataStorage] 工位 {result.StationId} 数据保存成功。ID: {record.Id}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DataStorage] 保存失败: {ex.Message}");
+                LogService.Error($"[DataStorage] 保存失败: {ex.Message}");
             }
         }
 

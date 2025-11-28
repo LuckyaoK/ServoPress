@@ -31,7 +31,7 @@ namespace ServoPress.Services
         /// </summary>
         public async Task RunProgramAsync(IEnumerable<SequenceStep> steps)
         {
-            Debug.WriteLine("[RealMotionControl] 开始下载程序...");
+            LogService.Info("[RealMotionControl] 开始下载程序...");
 
             // 这是一个异步的 "Task", 但 SDK 调用很可能是同步的。
             // 我们使用 Task.Run 将同步的、可能耗时的工作（SDK通信）放到后台线程，
@@ -74,7 +74,7 @@ namespace ServoPress.Services
                                 break;
                             // ... 处理所有其他步骤类型
                             default:
-                                Debug.WriteLine($"[RealMotionControl] 未知的步骤类型: {step.StepType}");
+                                LogService.Info($"[RealMotionControl] 未知的步骤类型: {step.StepType}");
                                 break;
                         }
                     }
@@ -82,13 +82,13 @@ namespace ServoPress.Services
                 catch (Exception ex)
                 {
                     // 如果 SDK 内部抛出异常, 在这里捕获并重新抛出，以便上层得知
-                    Debug.WriteLine($"[RealMotionControl] SDK 下载失败: {ex.Message}");
+                    LogService.Info($"[RealMotionControl] SDK 下载失败: {ex.Message}");
                     // 重新抛出异常，Task 将处于 Faulted 状态，
                     // ProductionViewModel 中的 await 也会感知到异常
                     throw new InvalidOperationException($"SDK 下载失败: {ex.Message}", ex);
                 }
             });
-            Debug.WriteLine("[RealMotionControl] 程序下载完成。");
+            LogService.Info("[RealMotionControl] 程序下载完成。");
         }
 
         /// <summary>
@@ -96,13 +96,13 @@ namespace ServoPress.Services
         /// </summary>
         public async Task StopProgramAsync()
         {
-            Debug.WriteLine("[RealMotionControl] 请求停止程序...");
+            LogService.Info("[RealMotionControl] 请求停止程序...");
             await Task.Run(() =>
             {
                 // (SDK) 调用“立即停止”
                 Sdk_StopProgram();
             });
-            Debug.WriteLine("[RealMotionControl] 停止指令已发送。");
+            LogService.Info("[RealMotionControl] 停止指令已发送。");
         }
 
         /// <summary>
@@ -110,13 +110,13 @@ namespace ServoPress.Services
         /// </summary>
         public async Task ResetAsync()
         {
-            Debug.WriteLine("[RealMotionControl] 请求复位...");
+            LogService.Info("[RealMotionControl] 请求复位...");
             await Task.Run(() =>
             {
                 // (SDK) 调用“复位”
                 Sdk_Reset();
             });
-            Debug.WriteLine("[RealMotionControl] 复位指令已发送。");
+            LogService.Info("[RealMotionControl] 复位指令已发送。");
         }
 
         // ====================================================================

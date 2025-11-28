@@ -111,10 +111,10 @@ namespace ServoPress.Services
             // TryAdd 是原子操作：如果添加成功返回 true（抢到锁了）；如果已存在返回 false（正在忙）
             if (!_busyStations.TryAdd(stationId, 0))
             {
-                Debug.WriteLine($"[DataAcquisition] 工位 {stationId} 正在采集中，忽略本次触发。");
+                LogService.Info($"[DataAcquisition] 工位 {stationId} 正在采集中，忽略本次触发。");
                 return;
             }
-            Debug.WriteLine($"[DataAcquisitionService] 工位 {stationId} 开始采集...");
+            LogService.Info($"[DataAcquisitionService] 工位 {stationId} 开始采集...");
 
             try
             {
@@ -123,7 +123,7 @@ namespace ServoPress.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[DataAcquisitionService] 采集失败: {ex.Message}");
+                LogService.Error($"[DataAcquisitionService] 采集失败: {ex.Message}");
             }
             finally
             {

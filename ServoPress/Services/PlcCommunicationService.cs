@@ -104,7 +104,7 @@ namespace ServoPress.Services
             _isDisposed = true;
 
             _siemensS7Net?.ConnectClose();
-            Debug.WriteLine("[PlcService] 已断开连接并释放。");
+            LogService.Info("[PlcService] 已断开连接并释放。");
         }
     }
 }

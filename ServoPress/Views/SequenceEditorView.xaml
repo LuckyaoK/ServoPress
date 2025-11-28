@@ -593,7 +593,7 @@
                     <Button Grid.Column="3" Style="{StaticResource PaletteButtonStyle}" Command="{Binding SaveSequenceCommand}">
                         <StackPanel>
                             <svgc:SvgViewbox Style="{StaticResource PaletteIconStyle}" Source="/Resources/Icons/Save.svg"/>
-                            <TextBlock Style="{StaticResource PaletteTextStyle}" Text="保存序列"/>
+                            <TextBlock Style="{StaticResource PaletteTextStyle}" Text="保存程序"/>
                         </StackPanel>
                     </Button>
                 </Grid>
