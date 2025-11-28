@@ -198,8 +198,6 @@ namespace ServoPress.ViewModels
                     for (int i = 0; i < _triggerAddresses.Length; i++)
                     {
                         string address = _triggerAddresses[i];
-
-                        // 1. 使用新的服务读取 bool 值
                         var readResult =  _plcService.ReadBool(address);
                         if (!readResult.IsSuccess)
                         {
@@ -215,13 +213,10 @@ namespace ServoPress.ViewModels
                             _ =_dataCollectService.TriggerCollectAsync(stationId);
                         }
 
-                        //重置
-                        //var writeResult = _plcService.WriteBool(address, false);
-
                     }
 
                     // 轮询间隔
-                    await Task.Delay(100, token); // 100ms 扫描一次
+                    await Task.Delay(100, token); // 100ms 扫描周期
                 }
                 catch (Exception ex)
                 {

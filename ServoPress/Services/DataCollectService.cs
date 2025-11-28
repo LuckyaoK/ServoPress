@@ -127,10 +127,11 @@ namespace ServoPress.Services
             }
             finally
             {
+                // 延时等待PLC信号复位，防止重复触发
+                await Task.Delay(1000);
                 // 采集完成，移除该工位的忙碌状态，释放锁
                 _busyStations.TryRemove(stationId, out _);
-                // 延时等待PLC信号复位，防止重复触发
-                Thread.Sleep(1000);
+              
             }
         }
 
