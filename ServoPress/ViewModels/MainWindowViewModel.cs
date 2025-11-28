@@ -87,7 +87,7 @@ namespace ServoPress.ViewModels
             _curveBoxService.LoadConfig();
 
             // 3. 初始化 ProductionVM，并将 service 传递给它
-            ProductionVM = new ProductionViewModel(_curveBoxService);
+            ProductionVM = new ProductionViewModel(_curveBoxService, _storageService);
 
             // 4. 注册保存消息监听
             WeakReferenceMessenger.Default.Register<SaveAllUniboxesMessage>(this, (r, m) =>

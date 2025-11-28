@@ -17,7 +17,7 @@ namespace ServoPress.Services
         private static void NotifyUI(string level,string message)
         {
             // 格式化日志消息: [时间] [级别] 内容
-            string formattedMsg = $"[{DateTime.Now:HH:mm:ss}] {message}";
+            string formattedMsg = $"[{DateTime.Now:HH:mm:ss:fff}] {message}";
             OnNewLog?.Invoke(formattedMsg);
         }
 

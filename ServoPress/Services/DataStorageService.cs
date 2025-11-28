@@ -1,4 +1,5 @@
-﻿using ServoPress.Database;
+﻿using Microsoft.EntityFrameworkCore;
+using ServoPress.Database;
 using ServoPress.Database.Entities;
 using System.Diagnostics;
 using System.Text.Json;
@@ -126,5 +127,34 @@ namespace ServoPress.Services
                 return query.OrderByDescending(r => r.Id).Take(500).ToList();
             }
         }
+
+        /// <summary>
+        /// 获取生产统计个数
+        /// </summary>
+        /// <param name="stationId"></param>
+        /// <returns></returns>
+        public (int OkCount, int NgCount) GetStationCounts(int stationId)
+        {
+            try
+            {
+                using (var context = new AppDbContext())
+                {
+                  
+                    var okCount = context.ProductionRecords
+                        .Count(r => r.StationId == stationId && r.ResulEnd == true);
+
+                    var ngCount = context.ProductionRecords
+                        .Count(r => r.StationId == stationId && r.ResulEnd == false);
+
+                    return (okCount, ngCount);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error($"[DataStorage] 获取工位 {stationId} 统计数据失败: {ex.Message}");
+                return (0, 0);
+            }
+        }
+
     }
 }

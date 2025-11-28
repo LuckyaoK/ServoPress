@@ -84,6 +84,8 @@ namespace ServoPress.ViewModels
         private LineSeries _curveSeries;
 
         private readonly CurveBoxService _curveBoxService;
+
+        private readonly DataStorageService _dataStorageService;
         /// <summary>
         /// 自动生成的 OnResultChanged 方法，在 _result 属性更新时触发
         /// </summary>
@@ -117,18 +119,19 @@ namespace ServoPress.ViewModels
         #endregion
 
 
-        public StationViewModel(int stationId, CurveBoxService curveBoxService)
+        public StationViewModel(int stationId, CurveBoxService curveBoxService, DataStorageService dataStorageService)
         {
             Id=stationId;
             StationName = $"工位 {Id}";
             _curveBoxService = curveBoxService;
+            _dataStorageService = dataStorageService;
             // 初始化图表
             InitializePlot();
 
             // 1. 初始化 EvalWindows 集合 (防止为空)
             EvalWindows = new List<EvalWindow>();
 
-            // 1. 加载特定工位的评估窗口配置
+            // 2. 加载特定工位的评估窗口配置
             if (_curveBoxService != null)
             {
                 var mySettings = _curveBoxService.GetSettingsForStation(Id);
@@ -139,8 +142,7 @@ namespace ServoPress.ViewModels
                 }
             }
 
-
-            // 初始化示例数据
+            // 初始化数据
             ProcessValues = new ObservableCollection<ProcessValue>
             {
                 new ProcessValue { Name = "最小位移", Value = "0.0", Unit = "mm" },
@@ -168,6 +170,13 @@ namespace ServoPress.ViewModels
                 Enabled = true,
                 AllowJudge = true,
             };
+
+            //初始化统计数据
+            (int _OkCount, int _NgCount) counts= _dataStorageService.GetStationCounts(stationId);
+            OkCount = counts._OkCount;
+            NgCount = counts._NgCount;
+            TotalCount = OkCount + NgCount;
+            Yield = (double)OkCount / TotalCount * 100.0;
         }
 
         #region 图表操作
@@ -207,7 +216,6 @@ namespace ServoPress.ViewModels
                 StrokeThickness = 2
             };
             PlotModel.Series.Add(_curveSeries);
-
            
         }
 

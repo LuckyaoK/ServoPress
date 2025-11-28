@@ -11,14 +11,14 @@ namespace ServoPress.ViewModels
     {
         public ObservableCollection<StationViewModel> Stations { get; }
 
-        public ProductionViewModel(CurveBoxService curveBoxService)
+        public ProductionViewModel(CurveBoxService curveBoxService, DataStorageService dataStorageService)
         {
             Stations = new ObservableCollection<StationViewModel>();
 
             // 初始化四个工位
             for (int i = 1; i <= 4; i++)
             {
-                var stationVM = new StationViewModel(i, curveBoxService);
+                var stationVM = new StationViewModel(i, curveBoxService, dataStorageService);
                 Stations.Add(stationVM);
             }
         }
