@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace ServoPress.Services
@@ -17,12 +18,12 @@ namespace ServoPress.Services
     /// </summary>
     public class ZMotionControlService : IMotionControlService
     {
-        // TODO: 在此处定义你的 SDK 实例或句柄
-        // private int _cardHandle = -1;
+        private IntPtr _handle = IntPtr.Zero; // 板卡连接句柄
+        private readonly string _ipAddress = "192.168.0.11"; 
 
         public ZMotionControlService()
         {
-            // 在构造函数中初始化运动卡
+            //初始化运动卡
             Sdk_Initialize();
         }
 
@@ -139,6 +140,35 @@ namespace ServoPress.Services
             // }
             // SDK.LoadConfig("config.xml");
             // SDK.SetAxisMode(0, AxisMode.Servo);
+
+            if (_handle != IntPtr.Zero) return;
+
+            LogService.Info($"正在连接控制器: {_ipAddress}...");
+
+            // 调用厂家提供的连接函数
+            int ret = Zmcaux.ZAux_OpenEth(_ipAddress, out _handle);
+
+            if (ret == 0) // 0表示成功
+            {
+                LogService.Info("控制器连接成功！");
+            }
+            else
+            {
+                string errorMsg = $"控制器连接失败，错误码: {ret}";
+                LogService.Error(errorMsg);
+                throw new Exception(errorMsg);
+            }
+        }
+
+
+        /// <summary>
+        /// 控制卡模拟输入量
+        /// </summary>
+        /// <param name="ionum"></param>
+        /// <param name="pfValue"></param>
+        public void Sdk_ReadDirectGetAD(int ionum, ref float pfValue)
+        {
+            Zmcaux.ZAux_Direct_GetAD(_handle, ionum, ref pfValue);
         }
 
         private void Sdk_ClearProgramBuffer()

@@ -103,6 +103,13 @@ namespace ServoPress.Services
 
         private readonly ConcurrentDictionary<int, byte> _busyStations = new ConcurrentDictionary<int, byte>();
 
+        private readonly ZMotionControlService _ZMtionService;
+
+        public DataCollectService(ZMotionControlService ZMtionService)
+        {
+            _ZMtionService = ZMtionService;
+        }
+
         public async Task TriggerCollectAsync(int stationId)
         {
             // 尝试将该工位标记为忙碌
@@ -147,24 +154,26 @@ namespace ServoPress.Services
             // 3. (循环接收数据... 假设收到了两组数据：位移和压力)
             // 4. (断开连接)
 
-            // 模拟生成曲线数据
+            // 生成曲线数据
             var curve = new List<DataPoint>();
-            var r = new Random();
-            double force = 0;
-            for (double pos = 0; pos <= 10; pos += 0.1)
-            {
-                force += (r.NextDouble() - 0.4);
-                if (pos > 5) force += (r.NextDouble() - 0.2); // 模拟压力上升
-                if (force < 0) force = 0;
-                curve.Add(new DataPoint(pos, force));
-            }
-
+            float pos = 0, force = 0;
+            _ZMtionService.Sdk_ReadDirectGetAD(0, ref pos);
+            _ZMtionService.Sdk_ReadDirectGetAD(1, ref force);
+        
+            //var r = new Random();
+            //for (double pos = 0; pos <= 10; pos += 0.1)
+            //{
+            //    force += (r.NextDouble() - 0.4);
+            //    if (pos > 5) force += (r.NextDouble() - 0.2); // 模拟压力上升
+            //    if (force < 0) force = 0;
+            //    curve.Add(new DataPoint(pos, force));
+            //}
+            curve.Add(new DataPoint(pos, force));
             double maxForce = curve.Max(p => p.Y);
             double EndForce = curve.LastOrDefault().Y;
 
             double EndPos = curve.LastOrDefault().X;
 
-            //初始化结果对象
             return new DataResult
             {
                 StationId = stationId,

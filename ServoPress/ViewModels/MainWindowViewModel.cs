@@ -71,16 +71,19 @@ namespace ServoPress.ViewModels
         //服务
         private DataCollectService _dataCollectService;
         private PlcCommunicationService _plcService;
-        private readonly CurveBoxService _curveBoxService;
-        private readonly DataStorageService _storageService;
+        private CurveBoxService _curveBoxService;
+        private DataStorageService _storageService;
+        private ZMotionControlService _zMotionService;
 
         public MainWindowViewModel()
         {
             // 1. 初始化基础服务
             _curveBoxService = new CurveBoxService();
             _plcService = new PlcCommunicationService(_s7IPAddress);
-            _dataCollectService = new DataCollectService();
+            _zMotionService = new ZMotionControlService();
+            _dataCollectService = new DataCollectService(_zMotionService);
             _storageService = new DataStorageService();
+         
             _storageService.InitializeDatabase();
 
             // 2. 加载评估窗口配置文件
