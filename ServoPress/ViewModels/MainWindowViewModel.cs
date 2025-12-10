@@ -33,7 +33,13 @@ namespace ServoPress.ViewModels
         // ViewModel
         [ObservableProperty]
         private StationViewModel _stationVM;
-        public ProductionViewModel ProductionVM { get; }
+        // 将ProductionVM 改为 ObservableProperty，以便初始化完成后通知 UI 更新
+        [ObservableProperty]
+        private ProductionViewModel _productionVM;
+
+        //用于控制界面显示的 Loading 状态（可选，界面可以绑定此属性显示加载动画）
+        [ObservableProperty]
+        private bool _isLoading = true;
 
         // 系统状态文本
         [ObservableProperty]
@@ -62,8 +68,11 @@ namespace ServoPress.ViewModels
         //PLC地址
         private string _s7IPAddress => "127.0.0.1";
 
-        // 触发地址
+        // 开始采集触发地址
         private readonly string[] _triggerAddresses = { "DB10.15.0", "DB10.16.0", "DB10.17.0", "DB10.18.0", };
+
+        // 停止采集触发地址
+        private readonly string[] _stopTriggers = { "DB10.25.0", "DB10.26.0", "DB10.27.0", "DB10.28.0", };
 
         private  CancellationTokenSource _cts;
         private  CancellationTokenSource _systemStatusCts;
@@ -77,45 +86,141 @@ namespace ServoPress.ViewModels
 
         public MainWindowViewModel()
         {
-            // 1. 初始化基础服务
-            _curveBoxService = new CurveBoxService();
-            _plcService = new PlcCommunicationService(_s7IPAddress);
-            _zMotionService = new ZMotionControlService();
-            _dataCollectService = new DataCollectService(_zMotionService);
-            _storageService = new DataStorageService();
-         
-            _storageService.InitializeDatabase();
+            #region
+            //// 1. 初始化基础服务
+            //_curveBoxService = new CurveBoxService();
+            //_plcService = new PlcCommunicationService(_s7IPAddress);
+            //_zMotionService = new ZMotionControlService();
+            //_dataCollectService = new DataCollectService(_zMotionService);
+            //_storageService = new DataStorageService();
 
-            // 2. 加载评估窗口配置文件
-            _curveBoxService.LoadConfig();
+            //_storageService.InitializeDatabase();
 
-            // 3. 初始化 ProductionVM，并将 service 传递给它
-            ProductionVM = new ProductionViewModel(_curveBoxService, _storageService);
+            //// 2. 加载评估窗口配置文件
+            //_curveBoxService.LoadConfig();
 
-            // 4. 注册保存消息监听
-            WeakReferenceMessenger.Default.Register<SaveAllUniboxesMessage>(this, (r, m) =>
+            //// 3. 初始化 ProductionVM，并将 service 传递给它
+            //ProductionVM = new ProductionViewModel(_curveBoxService, _storageService);
+
+            //// 4. 注册保存消息监听
+            //WeakReferenceMessenger.Default.Register<SaveAllUniboxesMessage>(this, (r, m) =>
+            //{
+            //    foreach (var station in ProductionVM.Stations)
+            //    {
+            //        station.SyncDataToService();
+            //    }
+
+            //    _curveBoxService.SaveConfig();
+            //});
+
+            ////5. 订阅数据采集完成事件
+            //_dataCollectService.OnDataCollect += OnDataCollectHandler;
+
+            ////6. 开启系统状态监听线程
+            //StartSystemMonitor();
+
+            ////7. 开启后台监听线程
+            //StartPLCLMonitor();
+
+            //// 8. 订阅日志事件
+            //LogService.OnNewLog += OnNewLogReceived;
+            #endregion
+
+            // 设置初始状态
+            SystemStatus = "系统启动中...";
+            SystemStatusColor = new SolidColorBrush(Colors.Yellow);
+
+            // 开启后台任务进行初始化，释放 UI 线程
+            Task.Run(async () =>
             {
-                foreach (var station in ProductionVM.Stations)
+                await InitializeAppAsync();
+            });
+            LogService.Info("应用程序启动");
+        }
+
+
+        // 异步初始化逻辑
+        private async Task InitializeAppAsync()
+        {
+            try
+            {
+                // 初始化服务对象
+                _curveBoxService = new CurveBoxService();
+                _plcService = new PlcCommunicationService(_s7IPAddress);
+                _zMotionService = new ZMotionControlService();
+                //日志订阅
+
+                LogService.OnNewLog += OnNewLogReceived;
+                // 连接控制卡
+                try
                 {
-                    station.SyncDataToService();
+                    _zMotionService.Connect();
+                }
+                catch (Exception ex)
+                {
+                    LogService.Error($"运动控制卡连接失败: {ex.Message}");
                 }
 
-                _curveBoxService.SaveConfig();
+                _dataCollectService = new DataCollectService(_zMotionService);
+                _storageService = new DataStorageService();
+
+                // 数据库初始化 (耗时)
+                _storageService.InitializeDatabase();
+
+                // 加载配置文件 (IO耗时)
+                _curveBoxService.LoadConfig();
+
+                // 创建子 ViewModel (如果它构造函数不耗时)
+                var prodVM = new ProductionViewModel(_curveBoxService, _storageService);
+
+                // 回到 UI 线程更新界面 ---
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    // 赋值 ViewModel，触发界面绑定更新
+                    ProductionVM = prodVM;
+
+                    // 注册消息监听 (必须在 ProductionVM 创建后)
+                    RegisterMessages();
+
+                    // 订阅事件
+                    _dataCollectService.OnDataCollect += OnDataCollectHandler;
+                
+
+                    // 启动监控线程
+                    StartSystemMonitor();
+                    StartPLCLMonitor();
+
+                    // 更新状态
+                    IsLoading = false;
+                    SystemStatus = "系统就绪";
+                    LogService.Info("应用程序异步启动完成");
+                });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    SystemStatus = "初始化失败";
+                    SystemStatusColor = new SolidColorBrush(Colors.Red);
+                    MessageBox.Show($"启动失败: {ex.Message}");
+                });
+            }
+        }
+
+        private void RegisterMessages()
+        {
+            WeakReferenceMessenger.Default.Register<SaveAllUniboxesMessage>(this, (r, m) =>
+            {
+                // 注意判空，防止初始化未完成时触发
+                if (ProductionVM != null)
+                {
+                    foreach (var station in ProductionVM.Stations)
+                    {
+                        station.SyncDataToService();
+                    }
+                    _curveBoxService.SaveConfig();
+                }
             });
-
-            //5. 订阅数据采集完成事件
-            _dataCollectService.OnDataCollect += OnDataCollectHandler;
-
-            //6. 开启系统状态监听线程
-            StartSystemMonitor();
-
-            //7. 开启后台监听线程
-            StartPLCLMonitor();
-
-            // 8. 订阅日志事件
-            LogService.OnNewLog += OnNewLogReceived;
-
-            LogService.Info("应用程序启动");
         }
 
         private void StartSystemMonitor()

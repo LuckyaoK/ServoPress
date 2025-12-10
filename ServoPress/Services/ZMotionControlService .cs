@@ -21,9 +21,8 @@ namespace ServoPress.Services
         private IntPtr _handle = IntPtr.Zero; // 板卡连接句柄
         private readonly string _ipAddress = "192.168.0.11"; 
 
-        public ZMotionControlService()
-        {
-            //初始化运动卡
+        public void Connect()
+        {   //初始化运动卡
             Sdk_Initialize();
         }
 
