@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>仪器仪表.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +32,7 @@
     <Content Include="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="仪器仪表.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,14 +48,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Properties\" />
     <Folder Include="Resources\Image\" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="HslCommunication">
       <HintPath>..\lib\HslCommunication.dll</HintPath>
-      <Private>True</Private>
     </Reference>
   </ItemGroup>
 
@@ -73,6 +73,21 @@
     <Resource Include="Resources\Icons\Min.svg" />
     <Resource Include="Resources\Icons\Max.svg" />
     <Resource Include="Resources\Icons\Close.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>

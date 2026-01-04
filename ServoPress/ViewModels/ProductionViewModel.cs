@@ -16,7 +16,7 @@ namespace ServoPress.ViewModels
             Stations = new ObservableCollection<StationViewModel>();
 
             // 初始化四个工位
-            for (int i = 1; i <= 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 var stationVM = new StationViewModel(i, curveBoxService, dataStorageService);
                 Stations.Add(stationVM);

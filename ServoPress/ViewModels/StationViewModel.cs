@@ -8,7 +8,7 @@ using OxyPlot.Series;
 using OxyPlot.Wpf;
 using ServoPress.Models;
 using ServoPress.Services;
-using System.Collections.ObjectModel; 
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Documents;
@@ -31,7 +31,7 @@ namespace ServoPress.ViewModels
 
         // 最终判定结果
         [ObservableProperty]
-        private string _result = ""; 
+        private string _result = "";
 
         // 判定结果的背景色
         [ObservableProperty]
@@ -57,14 +57,14 @@ namespace ServoPress.ViewModels
         public List<EvalWindow> EvalWindows { get; set; }
 
         // 1. 添加方向选项集合 (供 View 中的 ComboBox 绑定)
-        public ObservableCollection<string> EntryDirectionsOptions{ get; }= new ObservableCollection<string> { "上进", "下进", "左进", "右进", "不进"};
+        public ObservableCollection<string> EntryDirectionsOptions { get; } = new ObservableCollection<string> { "上进", "下进", "左进", "右进", "不进" };
         public ObservableCollection<string> ExitDirectionsOptions { get; } = new ObservableCollection<string> { "上出", "下出", "左出", "右出", "不出" };
-        
-       
+
+
         /// <summary>
         /// Unibox矩形框和箭头集合
         /// </summary>
-        public List<Unibox> Uniboxes { get; }=new List<Unibox>();
+        public List<Unibox> Uniboxes { get; } = new List<Unibox>();
         /// <summary>
         /// NoPass直线和标注
         /// </summary>
@@ -121,8 +121,8 @@ namespace ServoPress.ViewModels
 
         public StationViewModel(int stationId, CurveBoxService curveBoxService, DataStorageService dataStorageService)
         {
-            Id=stationId;
-            StationName = $"工位 {Id}";
+            Id = stationId;
+            StationName = $"工位{Id+1}(伺服{Id+5})";
             _curveBoxService = curveBoxService;
             _dataStorageService = dataStorageService;
             // 初始化图表
@@ -145,7 +145,7 @@ namespace ServoPress.ViewModels
             // 初始化数据
             ProcessValues = new ObservableCollection<ProcessValue>
             {
-                new ProcessValue { Name = "最小位移", Value = "0.0", Unit = "mm" },
+                new ProcessValue { Name = "序列号", Value = "", Unit = "" },
                 new ProcessValue { Name = "最大位移", Value = "0.0", Unit = "mm" },
                 new ProcessValue { Name = "最终位移", Value = "0.0", Unit = "mm" },
                 new ProcessValue { Name = "最小压力", Value = "0.0", Unit = "N" },
@@ -153,7 +153,7 @@ namespace ServoPress.ViewModels
                 new ProcessValue { Name = "最终压力", Value = "0.0", Unit = "N" },
                 new ProcessValue { Name = "结果详情", Value = "", Unit = "" }
             };
-         
+
             // 初始化 UniboxSettings
             UniboxSettings = new EvalWindow
             {
@@ -172,7 +172,7 @@ namespace ServoPress.ViewModels
             };
 
             //初始化统计数据
-            (int _OkCount, int _NgCount) counts= _dataStorageService.GetStationCounts(stationId);
+            (int _OkCount, int _NgCount) counts = _dataStorageService.GetStationCounts(stationId);
             OkCount = counts._OkCount;
             NgCount = counts._NgCount;
             TotalCount = OkCount + NgCount;
@@ -183,7 +183,7 @@ namespace ServoPress.ViewModels
         /// <summary>
         /// 初始化图表
         /// </summary>
-        private void InitializePlot()   
+        private void InitializePlot()
         {
             PlotModel = new PlotModel
             {
@@ -195,7 +195,7 @@ namespace ServoPress.ViewModels
                 Position = AxisPosition.Bottom,
                 Title = "位移 (mm)",
                 Minimum = 0,
-                Maximum = 10,
+                Maximum = 6,
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.Dot
             });
@@ -204,7 +204,7 @@ namespace ServoPress.ViewModels
                 Position = AxisPosition.Left,
                 Title = "压力 (N)",
                 Minimum = 0,
-                Maximum = 50,
+                Maximum = 1000,
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.Dot
             });
@@ -213,13 +213,19 @@ namespace ServoPress.ViewModels
             {
                 Title = "Line0",
                 Color = OxyColors.Black,
-                StrokeThickness = 2
+                StrokeThickness = 2,
+                // --- 添加以下代码 ---
+                // 启用抽稀算法，显著提升大量数据点时的渲染性能
+                Decimator = Decimator.Decimate,
+
+                // 确保使用实线，虚线在大数据量下性能较差
+                LineStyle = LineStyle.Solid
             };
             PlotModel.Series.Add(_curveSeries);
-           
+
         }
 
-       
+
         /// <summary>
         /// 同步最新配置回服务用于保存
         /// </summary>
@@ -236,15 +242,22 @@ namespace ServoPress.ViewModels
         /// <param name="data"></param>
         public void UpdateWithNewData(DataResult data)
         {
-            // 1. 更新判定结果
-            Result = data.Result ? "OK" : "NG"; 
-
-            // 2. 更新曲线
+            
+            Result = data.Result ? "OK" : "NG";
+           
             _curveSeries.Points.Clear();
-            _curveSeries.Points.AddRange(data.CurveData);
+
+            // 1. 获取原始数据 (可能由 20000+ 个点)
+            var rawData = data.CurveData;
+
+            // 2. 调用抽稀优化 (目标 3000 点，显示效果与 20000 点几乎无异，但极快)
+            var optimizedData = DataOptimizer.DownsampleMinMax(rawData, 1500);
+
+            _curveSeries.Points.AddRange(optimizedData);
+
             PlotModel.InvalidatePlot(true); // 刷新图表
             // 3. 更新过程值
-            ProcessValues[0].Value = data.MinPosition.ToString("F2");
+            ProcessValues[0].Value = data.SerialNumber;
             ProcessValues[1].Value = data.MaxPosition.ToString("F2");
             ProcessValues[2].Value = data.EndPosition.ToString("F2");
             ProcessValues[3].Value = data.MinForce.ToString("F2");
@@ -266,7 +279,7 @@ namespace ServoPress.ViewModels
         }
 
 
-    
+
         /// <summary>
         /// 手动拖拽创建评估窗口
         /// </summary>
@@ -288,8 +301,8 @@ namespace ServoPress.ViewModels
                 EndY = maxY,
                 EntryDirection = UniboxSettings.EntryDirection,
                 ExitDirection = UniboxSettings.ExitDirection,
-                AllowReentry= UniboxSettings.AllowReentry,
-                AllowJudge= UniboxSettings.AllowJudge
+                AllowReentry = UniboxSettings.AllowReentry,
+                AllowJudge = UniboxSettings.AllowJudge
             };
             UniboxSettings = evalWindow;
             // 2. 数据存储
@@ -319,7 +332,7 @@ namespace ServoPress.ViewModels
                 Stroke = OxyColors.Green,
                 StrokeThickness = 1,
                 Text = window.Name,
-                TextPosition = new DataPoint((window.StartX + window.EndX) / 2, window.EndY+ Math.Abs(window.StartY - window.EndY) * 0.15)
+                TextPosition = new DataPoint((window.StartX + window.EndX) / 2, window.EndY + Math.Abs(window.StartY - window.EndY) * 0.15)
             };
             PlotModel.Annotations.Add(rect);
 
@@ -355,7 +368,7 @@ namespace ServoPress.ViewModels
 
             PolygonAnnotation triangleAnnotation1 = new PolygonAnnotation();
             //进入
-            if(inBoxSide !=BoxSide.None)
+            if (inBoxSide != BoxSide.None)
             {
                 triangleAnnotation1 = _curveBoxService.CreatePoly(true, inBoxSide, triangleAnnotation1, window.StartX, window.EndX, window.StartY, window.EndY);
                 PlotModel.Annotations.Add(triangleAnnotation1);
@@ -368,7 +381,7 @@ namespace ServoPress.ViewModels
                 triangleAnnotation2 = _curveBoxService.CreatePoly(false, outBoxSide, triangleAnnotation2, window.StartX, window.EndX, window.StartY, window.EndY);
                 PlotModel.Annotations.Add(triangleAnnotation2);
             }
-            if(window.Type==WindowType.UniBox)
+            if (window.Type == WindowType.UniBox)
             {
                 Uniboxes.Add(new Unibox
                 {
@@ -378,7 +391,7 @@ namespace ServoPress.ViewModels
                 });
             }
 
-            else if(window.Type == WindowType.NoPass)
+            else if (window.Type == WindowType.NoPass)
             {
                 NoPasses.Add(new NoPass
                 {
@@ -387,7 +400,7 @@ namespace ServoPress.ViewModels
             }
 
         }
-       
+
         #endregion
 
 
@@ -426,7 +439,7 @@ namespace ServoPress.ViewModels
 
             //刷新图表
             PlotModel.InvalidatePlot(true);
-     
+
         }
 
         [RelayCommand]
@@ -463,7 +476,7 @@ namespace ServoPress.ViewModels
         [RelayCommand]
         private void SaveConfig()
         {
-          
+
             // 发送保存请求消息
             WeakReferenceMessenger.Default.Send(new SaveAllUniboxesMessage());
         }

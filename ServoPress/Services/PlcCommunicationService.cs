@@ -25,6 +25,7 @@ namespace ServoPress.Services
             _ipAddress = ipAddress;
             _siemensS7Net = new SiemensS7Net(SiemensPLCS.S1200, _ipAddress);
             _siemensS7Net.ConnectTimeOut = 5000; // 5秒连接超时
+            ConnectAsync();
         }
 
 
@@ -72,28 +73,32 @@ namespace ServoPress.Services
         }
 
         /// <summary>
-        /// 写入 short
+        /// 写入 short 西门子 PLC（S7-1200/1500/300/400）中，Int 代表 16位有符号整数（-32768 到 32767），占用 2个字节。
+        /// 如果是 32位整数，西门子通常标记为 DInt(Double Int)。
+        /// 
         /// </summary>
-        public bool WriteShort(string address, short value)
+        public OperateResult WriteInt16(string address, short value)
         {
-            return _siemensS7Net.Write(address, value).IsSuccess; ;
-        }
-
-        /// <summary>
-        /// 读取 Int32 值 (西门子 DInt, 例如 "MD20", "DB1.DBD4")
-        /// </summary>
-        public int ReadInt(string address)
-        {
-            return  _siemensS7Net.ReadInt32Async(address).Result.Content;
+            return _siemensS7Net.Write(address, value); ;
         }
 
         /// <summary>
         /// 写入 Int32 值
         /// </summary>
-        public bool WriteInt(string address, int value)
+        public OperateResult WriteInt32(string address, int value)
         {
-            return _siemensS7Net.WriteAsync(address, value).Result.IsSuccess;
+            return _siemensS7Net.Write(address, value);
         }
+
+        /// <summary>
+        /// 读取 Int32 值 (西门子 DInt, 例如 "MD20", "DB1.DBD4")
+        /// </summary>
+        public OperateResult<int> ReadInt(string address)
+        {
+            return  _siemensS7Net.ReadInt32(address);
+        }
+
+
 
         /// <summary>
         /// 关闭连接并释放资源

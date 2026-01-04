@@ -10,6 +10,7 @@ namespace ServoPress.Services
     /// </summary>
     public class DataStorageService
     {
+        private readonly object _lock = new object();
         /// <summary>
         /// 确保数据库已创建（在 App 启动时调用）
         /// </summary>
@@ -32,10 +33,10 @@ namespace ServoPress.Services
                 // 1. 将业务对象 DataResult 转换为 数据库实体 ProductionRecord
                 var record = new ProductionRecord
                 {
-                    StationId = result.StationId,
-                    StationName = $"工位-{result.StationId}",
-                    ProductType =result.ProductType,
-                    SerialNumber = result.GenerateSerialNumber(), 
+                    StationId = result.StationId + 1,//工站从1开始
+                    StationName = $"伺服-{result.StationId + 5}",//对应伺服从5开始
+                    ProductType = result.ProductType,
+                    SerialNumber = result.SerialNumber,
                     Timestamp = DateTime.Now,
 
                     ResulEnd = result.Result,
@@ -47,7 +48,7 @@ namespace ServoPress.Services
                     MinForce = result.MinForce,
                     MaxForce = result.MaxForce,
                     EndForce = result.EndForce,
-                  
+
                     // 核心：将曲线点列表序列化为 JSON 字符串存储
                     CurveDataJson = JsonSerializer.Serialize(result.CurveData),
                     EvalWindowsJson = JsonSerializer.Serialize(result.EvalWindow)
@@ -66,6 +67,7 @@ namespace ServoPress.Services
             {
                 LogService.Error($"[DataStorage] 保存失败: {ex.Message}");
             }
+            
         }
 
         /// <summary>

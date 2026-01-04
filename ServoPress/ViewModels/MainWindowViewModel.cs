@@ -1,18 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging; 
-using HslCommunication.Profinet.Siemens;
-using ServoPress.Models; 
+using CommunityToolkit.Mvvm.Messaging;
+using ServoPress.Models;
 using ServoPress.Services;
-using System.Collections.Generic; 
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
-using System.Text.Json; 
-using System.Text.Json.Serialization; 
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Media;
+using NLog.Targets;
 
 namespace ServoPress.ViewModels
 {
@@ -45,9 +42,20 @@ namespace ServoPress.ViewModels
         [ObservableProperty]
         private string _systemStatus = "系统初始化";
 
+
+        // 系统状态文本
+        [ObservableProperty]
+        private string _productType = "510";
+
         // 系统状态颜色
         [ObservableProperty]
         private SolidColorBrush _systemStatusColor = new SolidColorBrush(Colors.Gray);
+
+        // 锁对象，用于保护日志队列的并发访问
+        private readonly object _logLock = new object();
+
+        // 锁对象，用于保护结果处理逻辑的并发访问 (PLC写入、数据判定等)
+        private readonly object _processingLock = new object();
 
         // 日志内容
         [ObservableProperty]
@@ -66,65 +74,33 @@ namespace ServoPress.ViewModels
         private string _heartbeatAdd => "DB10.2.0";
 
         //PLC地址
-        private string _s7IPAddress => "127.0.0.1";
+        private string _s7IPAddress => "192.168.0.10";
 
-        // 开始采集触发地址
-        private readonly string[] _triggerAddresses = { "DB10.15.0", "DB10.16.0", "DB10.17.0", "DB10.18.0", };
+        // 压装开始采集触发地址
+        private readonly string[] _triggerAddresses = { "DB10.4.2", "DB10.4.4", "DB10.4.6", "DB10.5.0", };
 
-        // 停止采集触发地址
-        private readonly string[] _stopTriggers = { "DB10.25.0", "DB10.26.0", "DB10.27.0", "DB10.28.0", };
+        // 压装结束完成信号地址
+        private readonly string[] _finishedAddresses = { "DB10.12.3", "DB10.12.5", "DB10.12.7", "DB10.13.1", };
 
-        private  CancellationTokenSource _cts;
-        private  CancellationTokenSource _systemStatusCts;
+        // 压装结果信号地址
+        private readonly string[] _resultAddresses = { "DB10.20.0", "DB10.22.0", "DB10.24.0", "DB10.26.0", };
+
+        // 压装结果屏蔽地址
+        private readonly string[] _pingBiAddresses = { "DB10.8.2", "DB10.8.3", "DB10.8.4", "DB10.8.5", };
+
+
+        private CancellationTokenSource _cts;
+        private CancellationTokenSource _systemStatusCts;
 
         //服务
         private DataCollectService _dataCollectService;
         private PlcCommunicationService _plcService;
         private CurveBoxService _curveBoxService;
         private DataStorageService _storageService;
-        private ZMotionControlService _zMotionService;
+        private ArtDAQController _daqController;
 
         public MainWindowViewModel()
         {
-            #region
-            //// 1. 初始化基础服务
-            //_curveBoxService = new CurveBoxService();
-            //_plcService = new PlcCommunicationService(_s7IPAddress);
-            //_zMotionService = new ZMotionControlService();
-            //_dataCollectService = new DataCollectService(_zMotionService);
-            //_storageService = new DataStorageService();
-
-            //_storageService.InitializeDatabase();
-
-            //// 2. 加载评估窗口配置文件
-            //_curveBoxService.LoadConfig();
-
-            //// 3. 初始化 ProductionVM，并将 service 传递给它
-            //ProductionVM = new ProductionViewModel(_curveBoxService, _storageService);
-
-            //// 4. 注册保存消息监听
-            //WeakReferenceMessenger.Default.Register<SaveAllUniboxesMessage>(this, (r, m) =>
-            //{
-            //    foreach (var station in ProductionVM.Stations)
-            //    {
-            //        station.SyncDataToService();
-            //    }
-
-            //    _curveBoxService.SaveConfig();
-            //});
-
-            ////5. 订阅数据采集完成事件
-            //_dataCollectService.OnDataCollect += OnDataCollectHandler;
-
-            ////6. 开启系统状态监听线程
-            //StartSystemMonitor();
-
-            ////7. 开启后台监听线程
-            //StartPLCLMonitor();
-
-            //// 8. 订阅日志事件
-            //LogService.OnNewLog += OnNewLogReceived;
-            #endregion
 
             // 设置初始状态
             SystemStatus = "系统启动中...";
@@ -145,25 +121,15 @@ namespace ServoPress.ViewModels
             try
             {
                 // 初始化服务对象
-                _curveBoxService = new CurveBoxService();
-                _plcService = new PlcCommunicationService(_s7IPAddress);
-                _zMotionService = new ZMotionControlService();
+                _curveBoxService = new CurveBoxService();//判定框
+                _plcService = new PlcCommunicationService(_s7IPAddress);//PLC
+                _daqController = new ArtDAQController();//采集卡
+                _dataCollectService = new DataCollectService(_plcService, _daqController);//数据分析
+                _storageService = new DataStorageService();//数据存储
+
                 //日志订阅
-
                 LogService.OnNewLog += OnNewLogReceived;
-                // 连接控制卡
-                try
-                {
-                    _zMotionService.Connect();
-                }
-                catch (Exception ex)
-                {
-                    LogService.Error($"运动控制卡连接失败: {ex.Message}");
-                }
-
-                _dataCollectService = new DataCollectService(_zMotionService);
-                _storageService = new DataStorageService();
-
+              
                 // 数据库初始化 (耗时)
                 _storageService.InitializeDatabase();
 
@@ -182,9 +148,9 @@ namespace ServoPress.ViewModels
                     // 注册消息监听 (必须在 ProductionVM 创建后)
                     RegisterMessages();
 
-                    // 订阅事件
+                    // 订阅采集完成处理事件
                     _dataCollectService.OnDataCollect += OnDataCollectHandler;
-                
+
 
                     // 启动监控线程
                     StartSystemMonitor();
@@ -193,7 +159,7 @@ namespace ServoPress.ViewModels
                     // 更新状态
                     IsLoading = false;
                     SystemStatus = "系统就绪";
-                    LogService.Info("应用程序异步启动完成");
+                    LogService.Info("应用程序启动完成");
                 });
             }
             catch (Exception ex)
@@ -223,52 +189,58 @@ namespace ServoPress.ViewModels
             });
         }
 
+        /// <summary>
+        /// 监听系统运行状态
+        /// </summary>
         private void StartSystemMonitor()
         {
             _systemStatusCts = new CancellationTokenSource();
-
+           
             // 在后台线程运行，以免阻塞 UI
-            Task.Run(() =>
+
+            Task.Run(async () =>
             {
-                while (!_systemStatusCts.Token.IsCancellationRequested)
+                using (var ping = new Ping())
                 {
-                    try
+                    while (!_systemStatusCts.Token.IsCancellationRequested)
                     {
-                        // 初始连接
-                        bool IsPlcConnected = _plcService.ConnectAsync();
-                        //监听心跳
-                        _heartbeat = _plcService.ReadBool(_heartbeatAdd).Content;
-                        if (IsPlcConnected && _heartbeat)
+                        try
                         {
-                             _plcService.WriteBool(_heartbeatAdd, false);
+                            // 发送 Ping 请求，超时设置 1000ms
+                            PingReply reply = await ping.SendPingAsync(_s7IPAddress, 1000);
+
+                            bool IsPlcConnected = (reply.Status == IPStatus.Success);
+
+                            App.Current.Dispatcher.Invoke(() =>
+                            {
+                                if (IsPlcConnected)
+                                {
+                                    SystemStatus = "运行中"; 
+                                    SystemStatusColor = new SolidColorBrush(Colors.LimeGreen);
+                                }
+                                else
+                                {
+                                    SystemStatus = "PLC网络中断";
+                                    SystemStatusColor = new SolidColorBrush(Colors.Red);
+                                }
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                          
+                            LogService.Error($"监听错误: {ex.Message}");
                         }
 
-                        App.Current.Dispatcher.Invoke(() =>
-                        {
-                            if (IsPlcConnected)
-                            {
-                                SystemStatus = "运行中";
-                                SystemStatusColor = new SolidColorBrush(Colors.LimeGreen);
-                            }
-                            else
-                            {
-                            
-                                SystemStatus = "PLC连接失败";
-                                SystemStatusColor = new SolidColorBrush(Colors.Red);
-                            }
-                        });
-
+                        await Task.Delay(2000, _systemStatusCts.Token);
                     }
-                    catch (Exception ex)
-                    {
-                       LogService.Error($"监听错误: {ex.Message}");
-                    }
-                    
-                   Thread.Sleep(500);
                 }
             }, _systemStatusCts.Token);
+
         }
 
+        /// <summary>
+        /// 监听PLC触发信号
+        /// </summary>
         public void StartPLCLMonitor()
         {
             _cts = new CancellationTokenSource();
@@ -283,14 +255,25 @@ namespace ServoPress.ViewModels
 
         private void OnNewLogReceived(string message)
         {
-            _logQueue.Enqueue(message);
-
-            while (_logQueue.Count > MaxLogLines)
+            lock (_logLock)
             {
-                _logQueue.Dequeue();
-            }
+                _logQueue.Enqueue(message);
 
-            LogContent = string.Join(Environment.NewLine, _logQueue);
+                while (_logQueue.Count > MaxLogLines)
+                {
+                    _logQueue.Dequeue();
+                }
+
+                // 为了避免频繁刷新 UI，这里只拼接字符串
+                // string.Join 本身会遍历队列，所以必须在 lock 内部
+                string newLogContent = string.Join(Environment.NewLine, _logQueue);
+
+           
+                Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    LogContent = newLogContent;
+                });
+            }
         }
 
         /// <summary>
@@ -306,7 +289,7 @@ namespace ServoPress.ViewModels
                     for (int i = 0; i < _triggerAddresses.Length; i++)
                     {
                         string address = _triggerAddresses[i];
-                        var readResult =  _plcService.ReadBool(address);
+                        var readResult = _plcService.ReadBool(address);
                         if (!readResult.IsSuccess)
                         {
                             LogService.Error($"[PLC Polling] 读取 {address} 失败: {readResult.Message}");
@@ -316,9 +299,9 @@ namespace ServoPress.ViewModels
 
                         if (readResult.Content == true)
                         {
-                            int stationId = i + 1;
-                            LogService.Info($"[PLC Polling] 检测到工位 {stationId} 触发");
-                            _ =_dataCollectService.TriggerCollectAsync(stationId);
+                           
+                            LogService.Info($"[PLC Polling] 检测到工位 {i+1} 触发");
+                            _ = _dataCollectService.TriggerCollectAsync(i);
                         }
 
                     }
@@ -343,46 +326,93 @@ namespace ServoPress.ViewModels
         /// <param name="result"></param>
         private void OnDataCollectHandler(DataResult result)
         {
-            try
+            // 加锁：防止多个工位同时完成时发生资源竞争（如同时写PLC、写数据库、更新UI等）
+            lock (_processingLock)
             {
-                var stationVM = ProductionVM.Stations.FirstOrDefault(s => s.Id == result.StationId);
-                if (stationVM == null) return;
-
-                // 获取配置
-                var windows = _curveBoxService.GetSettingsForStation(result.StationId);
-                StringBuilder sb = new StringBuilder();
-                bool isAllPassed = true;
-
-                foreach (var box in windows)
+                try
                 {
-                    // 1. 分析几何关系
-                    var events = _curveBoxService.AnalyzeCurve(result.CurveData, box);
+                    var stationVM = ProductionVM.Stations.FirstOrDefault(s => s.Id == result.StationId);
+                    if (stationVM == null) return;
 
-                    // 2. 判定验证
-                    var (boxPassed, boxMessage) = _curveBoxService.VerifyBoxResult(box, events);
+                    // 获取配置
+                    var windows = _curveBoxService.GetSettingsForStation(result.StationId);
+                    StringBuilder sb = new StringBuilder();
+                    bool isAllPassed = true;
 
-                    if (!boxPassed) isAllPassed = false;
+                    foreach (var box in windows)
+                    {
+                        // 1. 分析几何关系
+                        var events = _curveBoxService.AnalyzeCurve(result.CurveData, box);
 
-                    sb.AppendLine($"[{box.Name}]: {boxMessage}");
+                        // 2. 判定验证
+                        var (boxPassed, boxMessage) = _curveBoxService.VerifyBoxResult(box, events);
+
+                        if (!boxPassed) isAllPassed = false;
+
+                        sb.AppendLine($"[{box.Name}]: {boxMessage}");
+                    }
+
+                    result.SerialNumber = result.GenerateSerialNumber();//生成产品序列号
+                    result.EvalWindow = windows;
+
+                    bool pingbi = _plcService.ReadBool(_pingBiAddresses[result.StationId]).Content;
+
+                    if (!pingbi)
+                    {
+                        result.ResultText = sb.ToString().TrimEnd();
+                        result.Result = isAllPassed;
+                    }
+                    else
+                    {
+                        result.ResultText = "压装工站屏蔽中";
+                        result.Result = true;
+                    }
+
+                    //先写入PLC结果
+                    short ResEnd = (short)(result.Result ? 99 : 1);
+                    LogService.Info($"工位{result.StationId + 1} 写入PLC{_resultAddresses[result.StationId]}结果 ->{ResEnd}");
+                    _plcService.WriteInt16(_resultAddresses[result.StationId], ResEnd);
+
+
+                    //后写入PLC完成信号
+                    _plcService.WriteBool(_finishedAddresses[result.StationId], true);
+
+                    if (result.StopSignalTimestamp > 0)
+                    {
+                        long currentTimestamp = Stopwatch.GetTimestamp();
+                        // 计算时间差 (Ticks -> 毫秒)
+                        double elapsedMs = (currentTimestamp - result.StopSignalTimestamp) * 1000.0 / Stopwatch.Frequency;
+
+                        LogService.Info($"【性能监控】工位{result.StationId + 1} 收到停止信号 -> 写完PLC结果 流程耗时: {elapsedMs:F2} ms");
+                    }
+
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        //更新图表
+                        stationVM.UpdateWithNewData(result);
+
+                    });
+
+                    //数据库存储
+                    _storageService.SaveResultAsync(result);
+
                 }
-
-                result.EvalWindow = windows;
-                result.ResultText = sb.ToString().TrimEnd();
-                result.Result = isAllPassed;
-
-                Application.Current.Dispatcher.Invoke(() =>
+                catch (Exception ex)
                 {
-                    //更新图表
-                    stationVM.UpdateWithNewData(result);
-                });
+                    LogService.Error($"压装结果采集判定失败: {ex.Message}");
 
-                //数据库存储
-                _storageService.SaveResultAsync(result);
+                    //结果
+                    short ResEnd = 1;
+                    _plcService.WriteInt16(_resultAddresses[result.StationId], ResEnd);
+
+
+                    //采集完成信号
+                    _plcService.WriteBool(_finishedAddresses[result.StationId], true);
+
+                }
             }
-            catch (Exception ex)
-            {
-                LogService.Error($"[MainWindowViewModel] 更新 UI 失败: {ex.Message}");
-            }
+
         }
 
 

@@ -40,13 +40,14 @@
                 <TabItem Header="过程值">
                     <Grid Margin="5">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="107*"/>
+                            <ColumnDefinition Width="337*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <DataGrid ItemsSource="{Binding ProcessValues}" 
                                   AutoGenerateColumns="False" 
-                                  Grid.Column="0">
+                                  Grid.Column="0" Grid.ColumnSpan="2">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*"/>
                                 <DataGridTextColumn Header="值" Binding="{Binding Value}" Width="3*"/>
@@ -55,10 +56,10 @@
                         </DataGrid>
 
                         <!-- 最终判定结果 -->
-                        <StackPanel Grid.Column="1" 
+                        <StackPanel Grid.Column="2" 
                                     Margin="10,0,0,0" 
                                     VerticalAlignment="Center" 
-                                    HorizontalAlignment="Center">
+                                    HorizontalAlignment="Left">
 
                             <!-- 新增: 判定结果标题 -->
                             <TextBlock Text="判定结果" 
@@ -106,7 +107,7 @@
 
                             <TextBlock Text="不合格" Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center" FontSize="14"/>
                             <TextBlock Text="{Binding NgCount}" Grid.Row="1" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14" FontWeight="Bold" Foreground="Red"/>
-                 
+
 
                             <TextBlock Text="总数" Grid.Row="2" Grid.Column="0" Margin="5" VerticalAlignment="Center" FontSize="14"/>
                             <TextBlock Text="{Binding TotalCount}" Grid.Row="2" Grid.Column="1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="14" FontWeight="Bold"/>
@@ -115,7 +116,7 @@
                     </GroupBox>
                 </TabItem>
 
-                <TabItem Header="Unibox">
+                <TabItem Header="Unibox判定">
                     <Grid Margin="5">
                         <Grid DataContext="{Binding UniboxSettings}">
                             <Grid.RowDefinitions>
@@ -178,7 +179,7 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem Header="NoPass" >
+                <TabItem Header="NoPass判定" >  
                     <Grid Margin="5">
                         <Grid DataContext="{Binding NoPassSettings}">
                             <Grid.RowDefinitions>

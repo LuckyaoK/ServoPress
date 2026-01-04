@@ -27,17 +27,16 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="传感器类型:" Grid.Row="0" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>
-                        <ComboBox Text="伺服编码器" Grid.Row="0" Grid.Column="1" Margin="5" SelectedIndex="0">
-                            <ComboBoxItem Content="伺服编码器"/>
-                            <ComboBoxItem Content="光栅尺"/>
+                        <ComboBox Text="位移传感器" Grid.Row="0" Grid.Column="1" Margin="5" SelectedIndex="0">
+                            <ComboBoxItem Content="位移传感器"/>
                         </ComboBox>
                         <TextBlock Text="单位:" Grid.Row="0" Grid.Column="2" Margin="5" VerticalAlignment="Center"/>
                         <TextBox Text="mm" Grid.Row="0" Grid.Column="3" Margin="5"/>
 
                         <TextBlock Text="行程范围:" Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>
-                        <TextBox Text="0 - 100.00" Grid.Row="1" Grid.Column="1" Margin="5"/>
+                        <TextBox Text="0 - 50.00" Grid.Row="1" Grid.Column="1" Margin="5"/>
                         <TextBlock Text="小数位数:" Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Center"/>
-                        <TextBox Text="2" Grid.Row="1" Grid.Column="3" Margin="5"/>
+                        <TextBox Text="4" Grid.Row="1" Grid.Column="3" Margin="5"/>
                     </Grid>
                 </GroupBox>
                 <GroupBox Header="Y 通道 (压力)">
@@ -53,9 +52,8 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="传感器类型:" Grid.Row="0" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>
-                        <ComboBox Text="应变片" Grid.Row="0" Grid.Column="1" Margin="5" SelectedIndex="0">
-                            <ComboBoxItem Content="应变片"/>
-                            <ComboBoxItem Content="压电"/>
+                        <ComboBox Text="称重传感器" Grid.Row="0" Grid.Column="1" Margin="5" SelectedIndex="0">
+                            <ComboBoxItem Content="称重传感器"/>
                         </ComboBox>
                         <TextBlock Text="单位:" Grid.Row="0" Grid.Column="2" Margin="5" VerticalAlignment="Center"/>
                         <TextBox Text="N" Grid.Row="0" Grid.Column="3" Margin="5"/>
@@ -63,12 +61,11 @@
                         <TextBlock Text="量程:" Grid.Row="1" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>
                         <TextBox Text="0 - 5000.0" Grid.Row="1" Grid.Column="1" Margin="5"/>
                         <TextBlock Text="小数位数:" Grid.Row="1" Grid.Column="2" Margin="5" VerticalAlignment="Center"/>
-                        <TextBox Text="1" Grid.Row="1" Grid.Column="3" Margin="5"/>
+                        <TextBox Text="4" Grid.Row="4" Grid.Column="3" Margin="5"/>
                     </Grid>
                 </GroupBox>
                 <StackPanel Orientation="Horizontal" Margin="5,20,5,5">
-                    <Button Content="机械零点标定" Style="{StaticResource ResetButtonStyle}" Margin="5"/>
-                    <Button Content="压力传感器清零" Style="{StaticResource ResetButtonStyle}" Margin="20,5,5,5"/>
+                    <Button Content="位移压力标定"  Margin="5"/>
                 </StackPanel>
             </StackPanel>
         </TabItem>
