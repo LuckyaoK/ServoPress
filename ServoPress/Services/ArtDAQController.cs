@@ -28,7 +28,7 @@ namespace ServoPress.Services
         // === 配置参数 ===
         private const string DeviceName = "Dev1";
         private const string TaskName = "GlobalMultiStationTask";
-        public const double SampleRate = 10000.0; // 10kHz
+        public const double SampleRate = 10000.0; // / 单通道采样率 10kHz
         public const int PerBlock = 1000;  // 每次回调读取点数
         public const int ChannelCount = 8;        // ai0-ai7
         private const int BufferSize = 200000;    // 缓冲区大小
@@ -53,62 +53,6 @@ namespace ServoPress.Services
             InitializeInternal();
         }
 
-        /// <summary>
-        /// 启动采集任务 (如果已启动则忽略)
-        /// </summary>
-        public void Start()
-        {
-            lock (_lock)
-            {
-                if (_isRunning && _taskHandle != IntPtr.Zero) return;
-
-                try
-                {
-                    ArtDAQ.ArtDAQ_StartTask(_taskHandle);
-                    Thread.Sleep(800);//延时等待开启
-                }
-                catch (Exception ex)
-                {
-                    // 1. 确保清理旧资源
-                    ShutdownInternal();
-
-                    // 2. 硬件复位 (解决 -50103 资源占用问题)
-                    ArtDAQ.ArtDAQ_ResetDevice(DeviceName);
-                    Thread.Sleep(500); // 等待复位完成
-
-                    // 3. 重新初始化任务
-                    InitializeInternal();
-
-                    _isRunning = false;
-                    LogService.Error($"[ArtDAQ] 致命错误，无法启动采集卡: {ex.Message}");
-                }
-
-                _isRunning = true;
-            }
-        }
-
-        /// <summary>
-        /// 停止采集任务
-        /// </summary>
-        public void Stop()
-        {
-            lock (_lock)
-            {
-                if (_taskHandle != IntPtr.Zero)
-                {
-                    try
-                    {
-                        ArtDAQ.ArtDAQ_StopTask(_taskHandle);
-                        Thread.Sleep(500);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogService.Error($"[ArtDAQ] 停止任务异常: {ex.Message}");
-                    }
-}
-                }
-                _isRunning = false;
-            }
         
 
         private void InitializeInternal()
@@ -146,6 +90,7 @@ namespace ServoPress.Services
             error = ArtDAQ.ArtDAQ_RegisterEveryNSamplesEvent(_taskHandle, ArtDAQ.ArtDAQ_Val_Acquired_Into_Buffer, (uint)PerBlock, 0, _callbackDelegate, IntPtr.Zero);
             CheckError(error, "RegisterCallback");
 
+            // 5. 启动任务
             error = ArtDAQ.ArtDAQ_StartTask(_taskHandle);
             CheckError(error, "StartTask");
 
